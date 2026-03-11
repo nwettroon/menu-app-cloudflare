@@ -5,8 +5,7 @@
  * - العودة للوردية يعرض قائمة بكل الورديات المفتوحة
  */
 import { showToast, CLIENT, getAdminKey } from './core.js';
-import { isFirebaseReady, getFirebaseDatabase } from './firebase.js';
-import { ref, set as dbSet, get as dbGet, onValue as dbOnValue, push as dbPush } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+import { isFirebaseReady, getFirebaseDatabase, ref, set as dbSet, get as dbGet, onValue as dbOnValue, push as dbPush } from './firebase.js';
 import { htmlToImage, canvasToESCPOSBitmap, detectOS } from './printing.js';
 
 // ====== Firebase ref helper ======
