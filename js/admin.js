@@ -2263,58 +2263,57 @@ function promptBranchSync(itemType, itemData, localSaveCallback) {
 
                 // التوزيع للفروع الأخرى بـ صمت (Background sync)
                 if (targetRefs.length > 0) {
-                    import('./core.js').then(({ showToast, getAdminKey }) => {
-                        showToast(`جارٍ تحديث ${targetRefs.length} فروع...`, 'info');
-                        const db = getFirebaseDatabase();
+                    import('./core.js').then(({ showToast, getAdminKey, CLIENT }) => {
+                        import('./firebase.js').then(async ({ fetchKVData, saveKVData }) => {
+                            showToast(`جارٍ تحديث ${targetRefs.length} فروع...`, 'info');
 
-                        targetRefs.forEach(tBranch => {
-                            const bPath = tBranch === 'main' ? '' : `branches/${tBranch}/`;
-                            if (itemType === 'all-items') {
-                                const catRef = ref(db, `${bPath}categories`);
-                                const cObj = {};
-                                itemData.categories.forEach((c, i) => cObj[i] = c);
-                                cObj.admin_key = getAdminKey();
-                                set(catRef, cObj);
+                            for (const tBranch of targetRefs) {
+                                const customClientId = CLIENT.id + (tBranch === 'main' ? '' : `-${tBranch}`);
+                                try {
+                                    const branchData = await fetchKVData(customClientId) || {};
 
-                                const prodRef = ref(db, `${bPath}products`);
-                                const pObj = {};
-                                itemData.products.forEach((p, i) => pObj[i] = p);
-                                pObj.admin_key = getAdminKey();
-                                set(prodRef, pObj);
-                            } else if (itemType === 'design') {
-                                const targetSettingsRef = ref(db, `${bPath}settings`);
-                                get(targetSettingsRef).then(snap => {
-                                    const curSets = snap.val() || {};
-                                    curSets.design = itemData.design || null;
-                                    curSets.appFont = itemData.appFont || 'default';
-                                    curSets.viewMode = itemData.viewMode || 'grid';
-                                    curSets.admin_key = getAdminKey();
-                                    set(targetSettingsRef, curSets);
-                                });
-                            } else {
-                                const listRef = ref(db, `${bPath}${itemType === 'product' ? 'products' : 'categories'}`);
-                                // لا نستبدل القائمة بالكامل، بل نسحبها ونضيف/نحدث العنصر
-                                get(listRef).then(snap => {
-                                    let list = snap.val() || [];
-                                    if (!Array.isArray(list)) list = Object.values(list).filter(v => typeof v === 'object' && v.id);
+                                    if (itemType === 'all-items') {
+                                        const cObj = {};
+                                        itemData.categories.forEach((c, i) => cObj[i] = c);
+                                        cObj.admin_key = getAdminKey();
+                                        branchData.categories = cObj;
 
-                                    const idx = list.findIndex(x => x && x.id === itemData.id);
-                                    if (idx !== -1) {
-                                        list[idx] = itemData; // تحديث
+                                        const pObj = {};
+                                        itemData.products.forEach((p, i) => pObj[i] = p);
+                                        pObj.admin_key = getAdminKey();
+                                        branchData.products = pObj;
+                                    } else if (itemType === 'design') {
+                                        branchData.settings = branchData.settings || {};
+                                        branchData.settings.design = itemData.design || null;
+                                        branchData.settings.appFont = itemData.appFont || 'default';
+                                        branchData.settings.viewMode = itemData.viewMode || 'grid';
+                                        branchData.settings.admin_key = getAdminKey();
                                     } else {
-                                        list.push(itemData); // إضافة
+                                        const listKey = itemType === 'product' ? 'products' : 'categories';
+                                        let list = branchData[listKey] || [];
+                                        if (!Array.isArray(list)) list = Object.values(list).filter(v => typeof v === 'object' && v.id);
+
+                                        const idx = list.findIndex(x => x && x.id === itemData.id);
+                                        if (idx !== -1) {
+                                            list[idx] = itemData; // تحديث
+                                        } else {
+                                            list.push(itemData); // إضافة
+                                        }
+
+                                        const updatedObj = {};
+                                        list.forEach((itm, i) => { if (itm) updatedObj[i] = itm; });
+                                        updatedObj.admin_key = getAdminKey();
+                                        branchData[listKey] = updatedObj;
                                     }
 
-                                    // إعادة تحويلها لـ Object لتوافق فايربيس مع الحفاظ على مفتاح الأدمن
-                                    const updatedObj = {};
-                                    list.forEach((itm, i) => { if (itm) updatedObj[i] = itm; });
-                                    updatedObj.admin_key = getAdminKey();
-
-                                    set(listRef, updatedObj).catch(err => console.error("Sync error:", err));
-                                });
+                                    await saveKVData(branchData, customClientId);
+                                } catch (err) {
+                                    console.error("Sync error for branch", tBranch, err);
+                                }
                             }
+
+                            setTimeout(() => showToast('تمت المزامنة بنجاح ✓', 'success'), 2000);
                         });
-                        setTimeout(() => showToast('تمت المزامنة بنجاح ✓', 'success'), 2000);
                     });
                 }
             });

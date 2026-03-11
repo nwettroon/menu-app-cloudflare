@@ -31,7 +31,7 @@ let _onDataChange = null;
 export function setDataChangeHandler(fn) { _onDataChange = fn; }
 
 // ====== دوال الاتصال مع Cloudflare KV API ======
-async function fetchKVData(customClientId = null) {
+export async function fetchKVData(customClientId = null) {
     // نجلب البيانات مع دعم الفروع
     const branchParam = currentBranchId === 'main' ? '' : `-${currentBranchId}`;
     const clientIdWithBranch = customClientId || (CLIENT.id + branchParam);
@@ -45,7 +45,7 @@ async function fetchKVData(customClientId = null) {
     }
 }
 
-async function saveKVData(payload, customClientId = null) {
+export async function saveKVData(payload, customClientId = null) {
     const branchParam = currentBranchId === 'main' ? '' : `-${currentBranchId}`;
     const clientIdWithBranch = customClientId || (CLIENT.id + branchParam);
     try {
