@@ -283,8 +283,8 @@
                 html += '    <div class="client-domains">🌐 ' + domains + '</div>';
                 html += '  </div>';
                 html += '  <div>';
-                html += '    <button class="edit-btn" onclick="editClient(\\'' + id + '\\')">✏️ تعديل</button>';
-                html += '    <button class="delete-btn" onclick="deleteClient(\\'' + id + '\\')">🗑️ حذف</button>';
+                html += '    <button class="edit-btn" onclick="editClient(\'' + id + '\')">✏️ تعديل</button>';
+                html += '    <button class="delete-btn" onclick="deleteClient(\'' + id + '\')">🗑️ حذف</button>';
                 html += '  </div>';
                 html += '</div>';
             });
@@ -358,26 +358,26 @@
                 const client = clientsData[key];
                 let extras = '';
                 if (client.moyasarPublishableKey) {
-                    extras = ',\\n        moyasarPublishableKey: "' + client.moyasarPublishableKey + '"';
+                    extras = ',\n        moyasarPublishableKey: "' + client.moyasarPublishableKey + '"';
                 }
                 const doms = JSON.stringify(client.domains);
-                entries += '    "' + key + '": {\\n        name: "' + client.name + '",\\n        domains: ' + doms + extras + '\\n    },\\n';
+                entries += '    "' + key + '": {\n        name: "' + client.name + '",\n        domains: ' + doms + extras + '\n    },\n';
             }
 
-            return '/* توليد تلقائي من الإدارة */\\n\\n' +
-                'const CLIENTS_DATA = {\\n' +
+            return '/* توليد تلقائي من الإدارة */\n\n' +
+                'const CLIENTS_DATA = {\n' +
                 entries +
-                '};\\n\\n' +
-                'function detectClient() {\\n' +
-                '    const hostname = window.location.hostname;\\n' +
-                '    for (const [clientId, client] of Object.entries(CLIENTS_DATA)) {\\n' +
-                '        if (client.domains.includes(hostname)) return { id: clientId, ...client };\\n' +
-                '    }\\n' +
-                '    const fallbackId = Object.keys(CLIENTS_DATA)[0] || "default";\\n' +
-                '    return { id: fallbackId, ...(CLIENTS_DATA[fallbackId] || {}) };\\n' +
-                '}\\n\\n' +
-                'const CLIENT = detectClient();\\n' +
-                'export { CLIENT, CLIENTS_DATA };\\n';
+                '};\n\n' +
+                'function detectClient() {\n' +
+                '    const hostname = window.location.hostname;\n' +
+                '    for (const [clientId, client] of Object.entries(CLIENTS_DATA)) {\n' +
+                '        if (client.domains.includes(hostname)) return { id: clientId, ...client };\n' +
+                '    }\n' +
+                '    const fallbackId = Object.keys(CLIENTS_DATA)[0] || "default";\n' +
+                '    return { id: fallbackId, ...(CLIENTS_DATA[fallbackId] || {}) };\n' +
+                '}\n\n' +
+                'const CLIENT = detectClient();\n' +
+                'export { CLIENT, CLIENTS_DATA };\n';
         }
 
         function clearForm() {
