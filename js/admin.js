@@ -724,12 +724,27 @@ export function handleImportData(event) {
             let importedCategoriesCount = 0;
             let importedProductsCount = 0;
 
+            // خريطة لربط معرف القسم القديم (من الملف) بالمعرف الجديد أو الموجود
+            const categoryIdMap = {};
+
             if (data.categories && Array.isArray(data.categories)) {
                 data.categories.forEach(importedCat => {
-                    const exists = state.categories.find(c => c.id === importedCat.id || c.name === importedCat.name);
-                    if (!exists) {
-                        // For IDs, maybe make sure we don't mess up max IDs, but standard push is fine 
-                        // as maxId calculation relies on current elements
+                    const existingByName = state.categories.find(c => c.name === importedCat.name);
+
+                    if (existingByName) {
+                        // القسم موجود مسبقاً بنفس الاسم، نربط منتجات هذا القسم بالمعرف الموجود
+                        categoryIdMap[importedCat.id] = existingByName.id;
+                    } else {
+                        // قسم جديد، نتأكد أن المعرف غير مكرر
+                        const existingById = state.categories.find(c => c.id === importedCat.id);
+                        if (existingById) {
+                            // تغيير المعرف لو كان موجود
+                            const newId = Date.now() + Math.floor(Math.random() * 1000) + importedCategoriesCount;
+                            categoryIdMap[importedCat.id] = newId;
+                            importedCat.id = newId;
+                        } else {
+                            categoryIdMap[importedCat.id] = importedCat.id;
+                        }
                         state.categories.push(importedCat);
                         importedCategoriesCount++;
                     }
@@ -738,8 +753,20 @@ export function handleImportData(event) {
 
             if (data.products && Array.isArray(data.products)) {
                 data.products.forEach(importedProd => {
-                    const exists = state.products.find(p => p.id === importedProd.id || p.name === importedProd.name);
-                    if (!exists) {
+                    // تحديث معرف القسم بناءً على الخريطة
+                    if (categoryIdMap[importedProd.categoryId]) {
+                        importedProd.categoryId = categoryIdMap[importedProd.categoryId];
+                    }
+
+                    // التحقق مما إذا كان المنتج موجود مسبقاً (بنفس الاسم والقسم)
+                    const existing = state.products.find(p => p.name === importedProd.name && p.categoryId === importedProd.categoryId);
+
+                    if (!existing) {
+                        // التأكد أن رقم الـ ID مو مكرر
+                        const existingById = state.products.find(p => p.id === importedProd.id);
+                        if (existingById) {
+                            importedProd.id = Date.now() + Math.floor(Math.random() * 1000) + importedProductsCount;
+                        }
                         state.products.push(importedProd);
                         importedProductsCount++;
                     }
@@ -750,7 +777,7 @@ export function handleImportData(event) {
                 saveData();
                 renderAdminPanel();
                 if (typeof renderProducts === 'function') renderProducts();
-                showToast(`تم استيراد ${importedCategoriesCount} قسم و ${importedProductsCount} صنف بنجاح!`, 'success');
+                showToast(`تم استيراد ${importedCategoriesCount} قسم و ${importedProductsCount} صنف بـنـجـاح!`, 'success');
             } else {
                 showToast('لم يتم استيراد شيء، جميع الأصناف والأقسام موجودة مسبقاً في القائمة.', 'info');
             }
