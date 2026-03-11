@@ -67,8 +67,13 @@ export async function loadDataFromServer() {
         const mainData = await fetchKVData(CLIENT.id);
         const branches = mainData ? mainData.branches_list : null;
         if (!branches || !branches[currentBranchId]) {
-            console.warn("Branch not found, redirecting to main...");
-            window.location.href = '?branch=main';
+            console.warn("Branch not found, showing error...");
+            document.body.innerHTML = `
+                <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; background:#fff2e8; color:#4a2c1a; font-family:sans-serif; text-align:center;">
+                    <h1 style="color:#e74c3c; font-size:40px; margin-bottom:10px;">❌ خطأ</h1>
+                    <p style="font-size:20px; font-weight:bold;">المعذرة، هذا الفرع غير موجود!</p>
+                </div>
+            `;
             return;
         }
     }
