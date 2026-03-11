@@ -1480,6 +1480,7 @@ function setupDesignControls() {
 
     // القواميس والقيم
     const controls = {
+        'logoUrlInput': { key: 'logoUrl', type: 'text' },
         'logoSizeRange': { key: 'logoSize', valId: 'logoSizeVal', suffix: 'px' },
         'borderRadiusRange': { key: 'borderRadius', valId: 'borderRadiusVal', suffix: 'px' },
         'shadowIntensityRange': { key: 'shadowIntensity', valId: 'shadowIntensityVal', suffix: '' },
@@ -1607,6 +1608,7 @@ function setupDesignControls() {
             const defaults = {
                 borderRadius: '15',
                 categoryCardShape: '50%',
+                logoUrl: 'images/logo.jpg',
                 logoSize: '100',
                 shadowIntensity: '0.1',
                 headerBlur: '10',

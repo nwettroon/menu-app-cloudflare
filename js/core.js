@@ -45,6 +45,7 @@ export const state = {
         gridColumnsMobile: '2',
         shadowIntensity: '0.1',
         headerBlur: '10',
+        logoUrl: 'images/logo.jpg',
         logoSize: '100',
         primaryColor: '#f26d21',
         backgroundColor: '#fff2e8',
@@ -130,6 +131,10 @@ export function applyDesign(design) {
     // الأبعاد والأحجام
     if (design.borderRadius) root.style.setProperty('--border-radius', design.borderRadius + 'px');
     if (design.logoSize) root.style.setProperty('--logo-size', design.logoSize + 'px');
+    if (design.logoUrl) {
+        const logoEl = document.getElementById('headerLogo');
+        if (logoEl) logoEl.src = design.logoUrl;
+    }
     if (design.shadowIntensity) root.style.setProperty('--card-shadow', `rgba(0,0,0,${design.shadowIntensity})`);
     if (design.headerBlur) root.style.setProperty('--header-blur', design.headerBlur + 'px');
 
