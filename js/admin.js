@@ -2127,54 +2127,63 @@ window.downloadBranchQR = function (link, branchName) {
 };
 
 window.toggleBranchMaintenance = function (bId, isMaintenance) {
-    import('./firebase.js').then(({ get, set, branchesListRef, getFirebaseDatabase, ref }) => {
-        get(branchesListRef).then(snapshot => {
-            const branches = snapshot.val() || {};
-            if (branches[bId]) {
-                branches[bId].maintenanceMode = isMaintenance;
-                import('./core.js').then(({ getAdminKey }) => {
-                    branches.admin_key = getAdminKey();
-                    set(branchesListRef, branches)
-                        .then(() => {
-                            import('./core.js').then(({ showToast }) => showToast(`تم ${isMaintenance ? 'تفعيل' : 'إلغاء'} وضع الصيانة للفرع بنجاح`, 'success'));
-                            const db = getFirebaseDatabase();
-                            const destRef = ref(db, `branches/${bId}/settings/maintenanceMode`);
-                            set(destRef, isMaintenance);
-                        })
-                        .catch(e => {
-                            import('./core.js').then(({ showToast }) => showToast('حدث خطأ أثناء التحديث', 'error'));
-                            console.error(e);
-                        });
+    import('./firebase.js').then(({ fetchKVData, saveKVData, get, set, branchesListRef }) => {
+        import('./core.js').then(async ({ getAdminKey, showToast, CLIENT }) => {
+            try {
+                // Update branch settings directly
+                const customClientId = CLIENT.id + `-${bId}`;
+                const branchData = await fetchKVData(customClientId) || {};
+                branchData.settings = branchData.settings || {};
+                branchData.settings.maintenanceMode = isMaintenance;
+                branchData.settings.admin_key = getAdminKey();
+                await saveKVData(branchData, customClientId);
+
+                // Update branches list for UI display
+                get(branchesListRef).then(snapshot => {
+                    const branches = snapshot.val() || {};
+                    if (branches[bId]) {
+                        branches[bId].maintenanceMode = isMaintenance;
+                        branches.admin_key = getAdminKey();
+                        set(branchesListRef, branches).then(() => {
+                            showToast(`تم ${isMaintenance ? 'تفعيل' : 'إلغاء'} وضع الصيانة للفرع بنجاح`, 'success');
+                        }).catch(e => showToast('حدث خطأ أثناء تحديث القائمة', 'error'));
+                    }
                 });
+            } catch (e) {
+                console.error(e);
+                showToast('حدث خطأ أثناء التحديث', 'error');
             }
         });
     });
 };
 
 window.toggleBranchAdminBtn = function (bId, checked) {
-    import('./firebase.js').then(({ getFirebaseDatabase, ref, get, set, branchesListRef }) => {
-        import('./core.js').then(({ getAdminKey, showToast }) => {
-            const db = getFirebaseDatabase();
-            // Update branch settings directly
-            const targetSettingsRef = ref(db, `branches/${bId}/settings`);
-            get(targetSettingsRef).then(snap => {
-                const curSets = snap.val() || {};
-                curSets.disableAdminBtn = checked;
-                curSets.admin_key = getAdminKey();
-                set(targetSettingsRef, curSets).catch(e => console.error(e));
-            });
+    import('./firebase.js').then(({ fetchKVData, saveKVData, get, set, branchesListRef }) => {
+        import('./core.js').then(async ({ getAdminKey, showToast, CLIENT }) => {
+            try {
+                // Update branch settings directly
+                const customClientId = CLIENT.id + `-${bId}`;
+                const branchData = await fetchKVData(customClientId) || {};
+                branchData.settings = branchData.settings || {};
+                branchData.settings.disableAdminBtn = checked;
+                branchData.settings.admin_key = getAdminKey();
+                await saveKVData(branchData, customClientId);
 
-            // Update branches list for UI display
-            get(branchesListRef).then(snap => {
-                const branches = snap.val() || {};
-                if (branches[bId]) {
-                    branches[bId].disableAdminBtn = checked;
-                    branches.admin_key = getAdminKey();
-                    set(branchesListRef, branches).then(() => {
-                        showToast(`تم ${checked ? 'إخفاء' : 'إظهار'} زر الإعدادات لفرع ${bId} ✓`, 'success');
-                    }).catch(e => showToast('فشل التعديل: ' + e.message, 'error'));
-                }
-            });
+                // Update branches list for UI display
+                get(branchesListRef).then(snap => {
+                    const branches = snap.val() || {};
+                    if (branches[bId]) {
+                        branches[bId].disableAdminBtn = checked;
+                        branches.admin_key = getAdminKey();
+                        set(branchesListRef, branches).then(() => {
+                            showToast(`تم ${checked ? 'إخفاء' : 'إظهار'} زر الإعدادات لفرع ${bId} ✓`, 'success');
+                        }).catch(e => showToast('فشل التعديل: ' + e.message, 'error'));
+                    }
+                });
+            } catch (e) {
+                console.error(e);
+                showToast('حدث خطأ أثناء التحديث', 'error');
+            }
         });
     });
 };
