@@ -332,13 +332,37 @@
         function saveAllData() {
             renderClients();
 
-            // 1. Download clients.json
-            downloadStrAsFile('clients.json', JSON.stringify(clientsData, null, 2));
+            // تجهيز البيانات
+            const clientsJsonText = JSON.stringify(clientsData, null, 2);
+            const configJsText = generateConfigContent();
 
-            // 2. Download config.js
-            const configStr = generateConfigContent();
+            // محاولة الحفظ التلقائي في جهازك مباشرة عن طريق السيرفر المحلي
+            fetch('/api/save-file', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    clientsJson: clientsJsonText,
+                    configJs: configJsText
+                })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast("✅ تم تحديث ملفات النظام في جهازك مباشرة! لا تنسى رفعها بـ git", "success");
+                    } else {
+                        fallbackDownload(clientsJsonText, configJsText);
+                    }
+                })
+                .catch(err => {
+                    // إذا لم يكن السيرفر المحلي يدعم الAPI (مثلا لو رفعتها على النت)، ينزلها كملفات
+                    fallbackDownload(clientsJsonText, configJsText);
+                });
+        }
+
+        function fallbackDownload(clientsJsonText, configJsText) {
+            downloadStrAsFile('clients.json', clientsJsonText);
             setTimeout(() => {
-                downloadStrAsFile('config.js', configStr);
+                downloadStrAsFile('config.js', configJsText);
             }, 500);
         }
 
