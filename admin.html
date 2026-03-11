@@ -39,7 +39,6 @@
             font-size: 14px;
         }
 
-        /* === العملاء الحاليين === */
         .clients-section {
             background: #16213e;
             border-radius: 12px;
@@ -62,11 +61,6 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: 0.2s;
-        }
-
-        .client-card:hover {
-            background: #1a4a7a;
         }
 
         .client-info h3 {
@@ -86,6 +80,17 @@
             margin-top: 4px;
         }
 
+        .edit-btn {
+            background: #f39c12;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            margin-left: 5px;
+        }
+
         .delete-btn {
             background: #e74c3c;
             color: white;
@@ -96,11 +101,6 @@
             font-size: 13px;
         }
 
-        .delete-btn:hover {
-            background: #c0392b;
-        }
-
-        /* === نموذج إضافة عميل === */
         .add-section {
             background: #16213e;
             border-radius: 12px;
@@ -114,15 +114,10 @@
             font-size: 20px;
         }
 
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 15px;
-        }
-
         .form-group {
             display: flex;
             flex-direction: column;
+            margin-bottom: 15px;
         }
 
         .form-group label {
@@ -139,22 +134,15 @@
             padding: 12px;
             border-radius: 8px;
             font-size: 14px;
-            direction: ltr;
-            text-align: left;
         }
 
-        .form-group input[data-rtl="true"] {
-            direction: rtl;
+        .form-group input[dir="rtl"] {
             text-align: right;
         }
 
-        .form-group input:focus {
-            outline: none;
-            border-color: #f26d21;
-        }
-
-        .form-group input::placeholder {
-            color: #555;
+        .form-group input[dir="ltr"] {
+            text-align: left;
+            direction: ltr;
         }
 
         .hint {
@@ -166,7 +154,7 @@
         .btn-row {
             display: flex;
             gap: 10px;
-            margin-top: 10px;
+            margin-top: 20px;
         }
 
         .save-btn {
@@ -181,25 +169,15 @@
             flex: 1;
         }
 
-        .save-btn:hover {
-            background: #3db890;
-        }
-
         .clear-btn {
             background: #333;
             color: #eee;
             border: 1px solid #555;
             padding: 14px 20px;
             border-radius: 8px;
-            font-size: 14px;
             cursor: pointer;
         }
 
-        .clear-btn:hover {
-            background: #444;
-        }
-
-        /* === رسائل === */
         .toast {
             position: fixed;
             top: 20px;
@@ -209,9 +187,8 @@
             border-radius: 8px;
             font-size: 15px;
             font-weight: 600;
-            z-index: 1000;
-            animation: slideDown 0.3s ease;
             display: none;
+            z-index: 1000;
         }
 
         .toast.success {
@@ -225,66 +202,42 @@
             color: white;
             display: block;
         }
-
-        @keyframes slideDown {
-            from {
-                top: -50px;
-                opacity: 0;
-            }
-
-            to {
-                top: 20px;
-                opacity: 1;
-            }
-        }
     </style>
 </head>
 
 <body>
     <div class="container">
         <h1>🔧 إدارة العملاء (Cloudflare)</h1>
-        <p class="subtitle">أضف أو احذف عملاء من نظام المنيو الموحد - بدون Firebase!</p>
+        <p class="subtitle">النظام المبسط لإضافة العملاء وتعديلهم</p>
 
-        <!-- العملاء الحاليين -->
         <div class="clients-section">
             <h2>📋 العملاء الحاليين</h2>
             <div id="clientsList">جاري التحميل...</div>
         </div>
 
-        <!-- نموذج الإضافة -->
         <div class="add-section">
-            <h2>➕ إضافة عميل جديد</h2>
-            <div class="form-grid">
-                <div class="form-group">
-                    <label>🔑 معرف العميل بالانجليزي (ID)</label>
-                    <input type="text" id="clientId" placeholder="مثال: thejuicytaste"
-                        style="text-transform: lowercase;">
-                    <span class="hint">يجب أن يكون حروف انجليزية وارقام وبدون مسافات، وهو الرابط الفرعي للعميل.</span>
-                </div>
-
-                <div class="form-group">
-                    <label>🏪 اسم المحل (بالعربي)</label>
-                    <input type="text" id="clientName" placeholder="مثال: مطعم الريان" data-rtl="true">
-                </div>
-
-                <div class="form-group">
-                    <label>🌐 دومينات العميل (مفصولة بفاصلة)</label>
-                    <input type="text" id="clientDomains" placeholder="burger-menu.com, burger.menu-app.pages.dev">
-                    <span class="hint">الدومينات اللي يدخلون منها الناس عشان المتصفح يعرف أي عميل يعرض.</span>
-                </div>
-
-                <div class="form-group">
-                    <label>💳 Moyasar Publishable Key (مفتاح النشر - ميسر)</label>
-                    <input type="text" id="moyasarKey" placeholder="pk_test_...">
-                    <span class="hint">يبدأ بـ pk_test أو pk_live. يستخدم لتفعيل الدفع الالكتروني للعميل.
-                        (اختياري)</span>
-                </div>
-
-                <div class="btn-row">
-                    <button class="save-btn" id="saveBtn" onclick="saveClient()">💾 حفظ العميل الجديد أو
-                        التعديلات</button>
-                    <button class="clear-btn" onclick="clearForm()">🗑️ مسح</button>
-                </div>
+            <h2>➕ إضافة / تعديل عميل</h2>
+            <div class="form-group">
+                <label>🔑 معرف العميل بالانجليزي (ID)</label>
+                <input type="text" id="clientId" dir="ltr" placeholder="thejuicytaste"
+                    style="text-transform: lowercase;">
+                <span class="hint">حروف انجليزية، أرقام وشرطات فقط.</span>
+            </div>
+            <div class="form-group">
+                <label>🏪 اسم المحل (بالعربي)</label>
+                <input type="text" id="clientName" dir="rtl" placeholder="مطعم الكوخ">
+            </div>
+            <div class="form-group">
+                <label>🌐 دومينات العميل (مفصولة بفاصلة)</label>
+                <input type="text" id="clientDomains" dir="ltr" placeholder="menu.com, test.pages.dev">
+            </div>
+            <div class="form-group">
+                <label>💳 مفتاح النشر - ميسر (اختياري)</label>
+                <input type="text" id="moyasarKey" dir="ltr" placeholder="pk_test_...">
+            </div>
+            <div class="btn-row">
+                <button class="save-btn" onclick="saveClient()">💾 حفظ العميل وتحديث الملفات</button>
+                <button class="clear-btn" onclick="clearForm()">🗑️ مسح النموذج</button>
             </div>
         </div>
     </div>
@@ -292,204 +245,155 @@
     <div class="toast" id="toast"></div>
 
     <script>
-        // === تحميل العملاء الحاليين ===
-        let clientsData = { clients: {} };
+        let clientsData = {};
 
         function loadClients() {
-            fetch('clients.json')
+            fetch('clients.json?t=' + Date.now())
                 .then(r => r.json())
                 .then(data => {
-                    // تصحيح: دعم الـ format القديم والجديد بكل سهولة
-                    clientsData = { clients: data.clients || data };
+                    // دعم الصيغة القديمة والجديدة
+                    clientsData = data.clients || data;
                     renderClients();
                 })
-                .catch(() => {
-                    document.getElementById('clientsList').innerHTML = '<p style="color:#e74c3c;">❌ لم يتم العثور على clients.json (أو ملف فارغ حالياً)</p>';
+                .catch(err => {
+                    console.error("Error loading clients", err);
+                    document.getElementById('clientsList').innerHTML = '<p style="color:#e74c3c;">❌ لا يوجد ملف clients.json أو أنه فارغ</p>';
                 });
         }
 
         function renderClients() {
             const container = document.getElementById('clientsList');
-            const clients = Object.entries(clientsData.clients || {});
+            const keys = Object.keys(clientsData);
 
-            if (clients.length === 0) {
-                container.innerHTML = '<p style="color:#888;">لا يوجد عملاء مسجلين</p>';
+            if (keys.length === 0) {
+                container.innerHTML = '<p style="color:#888;">لا يوجد عملاء حاليا</p>';
                 return;
             }
 
-            container.innerHTML = clients.map(([id, client]) => {
-                const hasMoyasar = client.moyasarPublishableKey ? '<span style="color:#f39c12; font-size:12px; margin-right:10px;">💳 دفع إلكتروني مفعل</span>' : '';
-                return `
-                <div class="client-card">
-                    <div class="client-info">
-                        <h3>${client.name} ${hasMoyasar}</h3>
-                        <p>ID: ${id}</p>
-                        <div class="client-domains">${(client.domains || []).map(d => '🌐 ' + d).join(' | ')}</div>
-                    </div>
-                    <div style="display:flex; gap: 8px;">
-                        <button class="edit-btn" onclick="editClient('${id}')" style="background:#f39c12; color:white; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-size:13px;">✏️ تعديل</button>
-                        <button class="delete-btn" onclick="deleteClient('${id}')">🗑️ حذف</button>
-                    </div>
-                </div>
-            `}).join('');
+            let html = '';
+            keys.forEach(id => {
+                const client = clientsData[id];
+                const hasM = client.moyasarPublishableKey ? '<span style="color:#f39c12; font-size:12px;">✅ ميسر مفعل</span>' : '';
+                const domains = (client.domains || []).join(' | ');
+
+                html += '<div class="client-card">';
+                html += '  <div class="client-info">';
+                html += '    <h3>' + client.name + ' ' + hasM + '</h3>';
+                html += '    <p>ID: ' + id + '</p>';
+                html += '    <div class="client-domains">🌐 ' + domains + '</div>';
+                html += '  </div>';
+                html += '  <div>';
+                html += '    <button class="edit-btn" onclick="editClient(\\'' + id + '\\')">✏️ تعديل</button>';
+                html += '    <button class="delete-btn" onclick="deleteClient(\\'' + id + '\\')">🗑️ حذف</button>';
+                html += '  </div>';
+                html += '</div>';
+            });
+            container.innerHTML = html;
         }
 
-        // === حفظ العميل ===
-        function saveClient() {
-            const clientId = document.getElementById('clientId').value.trim().toLowerCase();
-            const clientName = document.getElementById('clientName').value.trim();
-            const clientDomainsInput = document.getElementById('clientDomains').value.trim();
-            const moyasarPublishableKey = document.getElementById('moyasarKey').value.trim();
-
-            // التحقق
-            if (!clientId) { showToast('أدخل معرف العميل ID!', 'error'); return; }
-            if (!/^[a-z0-9-]+$/.test(clientId)) { showToast('المعرف يجب أن يكون أحرف انجليزية وأرقام وشرطات فقط', 'error'); return; }
-            if (!clientName) { showToast('أدخل اسم المحل!', 'error'); return; }
-            if (!clientDomainsInput) { showToast('أدخل على الأقل دومين واحد للعميل!', 'error'); return; }
-
-            // معالجة الدومينات
-            let domains = clientDomainsInput.split(',').map(d => d.trim().replace(/^https?:\/\//, '').replace(/\/$/, '')).filter(d => d);
-
-            // إضافة دومين الكلاود فلير التلقائي كدومين احتياطي إذا لم يكن موجود
-            const cfDomain = \`\${clientId}.menu-app-cloudflare.pages.dev\`;
-            if(!domains.includes(cfDomain)) domains.push(cfDomain);
-
-            // إضافة العميل للبيانات
-            if (!clientsData.clients) clientsData.clients = {};
-            
-            clientsData.clients[clientId] = {
-                name: clientName,
-                domains: domains
-            };
-
-            if (moyasarPublishableKey) {
-                clientsData.clients[clientId].moyasarPublishableKey = moyasarPublishableKey;
-            }
-
-            // حفظ clients.json
-            saveToFile('clients.json', JSON.stringify(clientsData, null, 2));
-
-            // توليد config.js جديد
-            const configContent = generateConfigJS(clientsData);
-            saveToFile('config.js', configContent);
-
-            renderClients();
-            clearForm();
-            showToast(\`✅ تم حفظ "\${clientName}" بنجاح! نزل التعديلات وارفعها بالـ Git\`, 'success');
-        }
-
-        // === تعديل عميل ===
         function editClient(id) {
-            const client = clientsData.clients[id];
+            const client = clientsData[id];
             if (!client) return;
-
             document.getElementById('clientId').value = id;
             document.getElementById('clientName').value = client.name || '';
             document.getElementById('clientDomains').value = (client.domains || []).join(', ');
             document.getElementById('moyasarKey').value = client.moyasarPublishableKey || '';
-
-            document.querySelector('.add-section').scrollIntoView({ behavior: 'smooth' });
-            showToast('تم تحميل بيانات العميل في النموذج للتعديل', 'success');
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
         }
 
-        // === حذف عميل ===
         function deleteClient(id) {
-            const name = clientsData.clients[id]?.name || id;
-            if (!confirm(\`هل تريد بالتاكيد حذف "\${name}"؟ هذه العملية لا تحذف بيانات المنيو من Cloudflare KV الخاصة به.\`)) return;
+            if (!confirm("تأكيد الحذف للعميل " + id + "؟")) return;
+            delete clientsData[id];
+            saveAllData();
+            showToast("تم الحذف بنجاح", "success");
+        }
 
-            delete clientsData.clients[id];
+        function saveClient() {
+            const id = document.getElementById('clientId').value.trim().toLowerCase();
+            const name = document.getElementById('clientName').value.trim();
+            const doms = document.getElementById('clientDomains').value.trim();
+            const moyasar = document.getElementById('moyasarKey').value.trim();
 
-            saveToFile('clients.json', JSON.stringify(clientsData, null, 2));
-            saveToFile('config.js', generateConfigJS(clientsData));
+            if (!id || !/^[a-z0-9-]+$/.test(id)) return showToast("المعرف غير صالح", "error");
+            if (!name) return showToast("الاسم مطلوب", "error");
 
+            let domainsArr = doms.split(',').map(d => d.trim()).filter(d => d);
+            const cf = id + ".menu-app-cloudflare.pages.dev";
+            if (!domainsArr.includes(cf)) domainsArr.push(cf);
+
+            clientsData[id] = { name: name, domains: domainsArr };
+            if (moyasar) clientsData[id].moyasarPublishableKey = moyasar;
+
+            saveAllData();
+            clearForm();
+            showToast("تم حفظ العميل وتحميل الملفات", "success");
+        }
+
+        function saveAllData() {
             renderClients();
-            showToast(\`🗑️ تم حذف "\${name}"\`, 'success');
+
+            // 1. Download clients.json
+            downloadStrAsFile('clients.json', JSON.stringify(clientsData, null, 2));
+
+            // 2. Download config.js
+            const configStr = generateConfigContent();
+            setTimeout(() => {
+                downloadStrAsFile('config.js', configStr);
+            }, 500);
         }
 
-        // === حفظ الملفات عبر server.js API أو كتنزيل ===
-        function saveToFile(filename, content) {
-            // محاولة الحفظ عبر سكريبت Node.js محلي إذا كان يعمل لبيئة التطوير
-            fetch('/api/save-file', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ filename, content })
-            }).then(res => {
-                if(!res.ok) throw new Error();
-            }).catch(() => {
-                // إذا لم يكن السيرفر المحلي يعمل (مثل الاستخدام العادي)، قم بتحميل الملف للمستخدم ليرفعه للـ Git
-                downloadFile(filename, content);
-            });
-        }
-
-        function downloadFile(filename, content) {
-            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+        function downloadStrAsFile(filename, text) {
+            const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
             a.download = filename;
             a.click();
             URL.revokeObjectURL(url);
-            showToast(\`عليك نقل الملف \${filename} المستبدل إلى مجلد المشروع ثم رفعه للـ GitHub\`, 'success');
         }
 
-        // === توليد config.js النظيف لدعم كلاود فلير ===
-        function generateConfigJS(data) {
+        function generateConfigContent() {
             let entries = '';
-            for (const [id, client] of Object.entries(data.clients)) {
-                let moyasarConfig = '';
+            for (const key in clientsData) {
+                const client = clientsData[key];
+                let extras = '';
                 if (client.moyasarPublishableKey) {
-                    moyasarConfig = '\n        moyasarPublishableKey: "' + client.moyasarPublishableKey + '"';
+                    extras = ',\\n        moyasarPublishableKey: "' + client.moyasarPublishableKey + '"';
                 }
-
-                entries += '    "' + id + '": {\n        name: "' + client.name + '",\n        domains: ' + JSON.stringify(client.domains) + moyasarConfig + '\n    },\n';
+                const doms = JSON.stringify(client.domains);
+                entries += '    "' + key + '": {\\n        name: "' + client.name + '",\\n        domains: ' + doms + extras + '\\n    },\\n';
             }
 
-            return '/**\n' +
-                ' * ===== إعدادات العملاء (Cloudflare) =====\n' +
-                ' * هذا الملف يُولَّد تلقائياً من admin.html - لا تعدّله يدوياً!\n' +
-                ' * آخر تحديث: ' + new Date().toLocaleString('ar-SA') + '\n' +
-                ' */\n\n' +
-                'const CLIENTS_DATA = {\n' +
-                entries + '};\n\n' +
-                '/**\n' +
-                ' * كشف العميل الحالي من الرابط تلقائياً\n' +
-                ' */\n' +
-                'function detectClient() {\n' +
-                '    const hostname = window.location.hostname;\n\n' +
-                '    // البحث في كل العملاء عن الدومين المطابق\n' +
-                '    for (const [clientId, client] of Object.entries(CLIENTS_DATA)) {\n' +
-                '        if (client.domains.includes(hostname)) {\n' +
-                '            console.log("✅ تم التعرف على العميل: " + client.name + " (" + clientId + ")");\n' +
-                '            return { id: clientId, ...client };\n' +
-                '        }\n' +
-                '    }\n\n' +
-                '    // لو localhost أو غير معروف - استخدم أول عميل (للتطوير المحلي)\n' +
-                '    const firstKey = Object.keys(CLIENTS_DATA)[0];\n' +
-                '    const fallback = CLIENTS_DATA[firstKey];\n' +
-                '    console.log("⚠️ دومين غير معروف (" + hostname + ") - استخدام: " + fallback.name);\n' +
-                '    return { id: firstKey, ...fallback };\n' +
-                '}\n\n' +
-                '// === العميل الحالي ===\n' +
-                'const CLIENT = detectClient();\n\n' +
-                '// تصدير للاستخدام في app.js\n' +
-                'export { CLIENT, CLIENTS_DATA };\n';
+            return '/* توليد تلقائي من الإدارة */\\n\\n' +
+                'const CLIENTS_DATA = {\\n' +
+                entries +
+                '};\\n\\n' +
+                'function detectClient() {\\n' +
+                '    const hostname = window.location.hostname;\\n' +
+                '    for (const [clientId, client] of Object.entries(CLIENTS_DATA)) {\\n' +
+                '        if (client.domains.includes(hostname)) return { id: clientId, ...client };\\n' +
+                '    }\\n' +
+                '    const fallbackId = Object.keys(CLIENTS_DATA)[0] || "default";\\n' +
+                '    return { id: fallbackId, ...(CLIENTS_DATA[fallbackId] || {}) };\\n' +
+                '}\\n\\n' +
+                'const CLIENT = detectClient();\\n' +
+                'export { CLIENT, CLIENTS_DATA };\\n';
         }
 
-        // === أدوات ===
         function clearForm() {
-            ['clientId', 'clientName', 'clientDomains', 'moyasarKey'].forEach(id => {
-                document.getElementById(id).value = '';
-            });
+            document.getElementById('clientId').value = '';
+            document.getElementById('clientName').value = '';
+            document.getElementById('clientDomains').value = '';
+            document.getElementById('moyasarKey').value = '';
         }
 
         function showToast(msg, type) {
-            const toast = document.getElementById('toast');
-            toast.textContent = msg;
-            toast.className = 'toast ' + type;
-            setTimeout(() => { toast.className = 'toast'; }, 4000);
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.className = 'toast ' + type;
+            setTimeout(() => { t.className = 'toast'; }, 3000);
         }
 
-        // === تشغيل ===
         loadClients();
     </script>
 </body>
