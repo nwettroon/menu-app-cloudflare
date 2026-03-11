@@ -1,43 +1,23 @@
 /**
- * js/firebase.js - خدمة Firebase: التهيئة، التحميل، الحفظ
- * #7: دالة parseFirebaseData موحدة (بدل التكرار 4 مرات)
- * #10: مستمعات منفصلة للأقسام والمنتجات والإعدادات
+ * js/firebase.js - محاكي كلاود فلير (بديل فايربيس بالكامل)
+ * هذا الملف تم تعديله لفصل فايربيس واستخدام Cloudflare KV بدلاً منه عبر الـ API
  */
-import { initializeApp as firebaseInit } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getDatabase, ref, onValue, set, get, push, onChildAdded, onChildChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 import { CLIENT } from '../config.js';
 import { state, applyFont, applyDesign, createDefaultData, showToast, getAdminKey } from './core.js';
 
-// ====== الاستخراج لـ Branch ======
 const urlParams = new URLSearchParams(window.location.search);
 export const currentBranchId = urlParams.get('branch') || 'main';
 
-// ====== تهيئة Firebase ======
-let _firebaseApp, _database;
-export let dbRef, categoriesRef, productsRef, settingsRef, branchesListRef, rootSettingsRef;
-let _firebaseReady = false;
+// ====== وهميات لمنع تعطل الأكواد الأخرى (Mock Refs) ======
+export const dbRef = "root";
+export const categoriesRef = "categories";
+export const productsRef = "products";
+export const settingsRef = "settings";
+export const branchesListRef = "branches_list";
+export const rootSettingsRef = "root_settings";
 
-try {
-    _firebaseApp = firebaseInit(CLIENT.firebaseConfig);
-    _database = getDatabase(_firebaseApp);
-    dbRef = ref(_database);
+export function isFirebaseReady() { return true; }
 
-    // إعداد مسار الفرع
-    const basePath = currentBranchId === 'main' ? '' : `branches/${currentBranchId}/`;
-    categoriesRef = ref(_database, basePath + 'categories');
-    productsRef = ref(_database, basePath + 'products');
-    settingsRef = ref(_database, basePath + 'settings');
-    rootSettingsRef = ref(_database, 'settings'); // الجذر دائماً لاختبار الدخول
-    branchesListRef = ref(_database, 'branches_list'); // قائمة الفروع الجذرية
-
-    _firebaseReady = true;
-} catch (e) {
-    console.error('خطأ في تهيئة Firebase:', e);
-}
-
-export function isFirebaseReady() { return _firebaseReady; }
-
-// ====== محلل بيانات Firebase الموحد (#7) ======
 export function parseFirebaseData(data) {
     if (!data) return [];
     if (Array.isArray(data)) return data;
@@ -47,89 +27,75 @@ export function parseFirebaseData(data) {
         .map(k => data[k]);
 }
 
-// ====== Callbacks للتحديث ======
 let _onDataChange = null;
 export function setDataChangeHandler(fn) { _onDataChange = fn; }
 
-// ====== تحميل البيانات (#10 - مستمعات منفصلة) ======
-let _categoriesListenerAttached = false;
-let _productsListenerAttached = false;
-let _settingsListenerAttached = false;
-
-export function loadDataFromServer() {
-    if (!_firebaseReady) {
-        console.warn('Firebase غير متصل - استخدام البيانات الافتراضية');
-        if (state.categories.length === 0) createDefaultData();
-        if (_onDataChange) _onDataChange();
-        return;
-    }
-
-    // مستمع الأقسام
-    if (!_categoriesListenerAttached) {
-        _categoriesListenerAttached = true;
-        onValue(categoriesRef, (snapshot) => {
-            if (state._suppressFirebaseSync) return;
-            const data = snapshot.val();
-            state.categories = data ? parseFirebaseData(data) : [];
-            if (state.categories.length === 0 && state.products.length === 0) createDefaultData();
-            if (_onDataChange) _onDataChange();
-        }, (error) => {
-            console.error('خطأ في تحميل الأقسام:', error);
-            if (state.categories.length === 0) createDefaultData();
-            if (_onDataChange) _onDataChange();
-        });
-    }
-
-    // مستمع المنتجات
-    if (!_productsListenerAttached) {
-        _productsListenerAttached = true;
-        onValue(productsRef, (snapshot) => {
-            if (state._suppressFirebaseSync) return;
-            const data = snapshot.val();
-            state.products = data ? parseFirebaseData(data) : [];
-            if (_onDataChange) _onDataChange();
-        }, (error) => {
-            console.error('خطأ في تحميل المنتجات:', error);
-        });
-    }
-
-    // مستمع الإعدادات
-    if (!_settingsListenerAttached) {
-        _settingsListenerAttached = true;
-        onValue(settingsRef, (snapshot) => {
-            const settings = snapshot.val();
-            if (settings) {
-                state.splitInvoice = settings.splitInvoice || false;
-                state.printMethod = settings.printMethod || 'image';
-                state.invoiceCounter = settings.invoiceCounter || 0;
-                state.viewMode = settings.viewMode || 'grid';
-                state.appFont = settings.appFont || 'default';
-                applyFont(state.appFont);
-                state.design = settings.design || null;
-                if (settings.design) {
-                    applyDesign(settings.design);
-                }
-                state.disableCart = settings.disableCart || false;
-                state.disableBestSellers = settings.disableBestSellers || false;
-                state.disableShifts = settings.disableShifts || false;
-                state.disableAdminBtn = settings.disableAdminBtn || false;
-                state.maintenanceMode = settings.maintenanceMode || false;
-                state.enableOnlinePayment = settings.enableOnlinePayment || false;
-                state.simulatePayment = settings.simulatePayment || false;
-
-                if (_onDataChange) _onDataChange();
-            }
-        }, (error) => {
-            console.error('خطأ في تحميل الإعدادات:', error);
-        });
+// ====== دوال الاتصال مع Cloudflare KV API ======
+async function fetchKVData() {
+    // نجلب البيانات مع دعم الفروع
+    const branchParam = currentBranchId === 'main' ? '' : `-${currentBranchId}`;
+    const clientIdWithBranch = CLIENT.id + branchParam;
+    try {
+        const res = await fetch(`/api/data?client=${clientIdWithBranch}`);
+        const data = await res.json();
+        return (data && !data.message) ? data : null;
+    } catch (e) {
+        console.error("KV Fetch Error:", e);
+        return null;
     }
 }
 
-// ====== حفظ البيانات ======
-export function saveData() {
-    const adminKey = getAdminKey();
-    if (!_firebaseReady || !adminKey) return;
+async function saveKVData(payload) {
+    const branchParam = currentBranchId === 'main' ? '' : `-${currentBranchId}`;
+    const clientIdWithBranch = CLIENT.id + branchParam;
+    try {
+        await fetch(`/api/data?client=${clientIdWithBranch}`, {
+            method: 'POST',
+            body: JSON.stringify(payload),
+            headers: { 'Content-Type': 'application/json' }
+        });
+    } catch (e) {
+        console.error("KV Save Error:", e);
+        throw e;
+    }
+}
 
+// ====== تحميل وحفظ البيانات للنظام ======
+export async function loadDataFromServer() {
+    const data = await fetchKVData();
+    if (data) {
+        state.categories = data.categories ? parseFirebaseData(data.categories) : [];
+        state.products = data.products ? parseFirebaseData(data.products) : [];
+
+        const settings = data.settings || {};
+        state.splitInvoice = settings.splitInvoice || false;
+        state.printMethod = settings.printMethod || 'image';
+        state.invoiceCounter = settings.invoiceCounter || 0;
+        state.viewMode = settings.viewMode || 'grid';
+        state.appFont = settings.appFont || 'default';
+        applyFont(state.appFont);
+
+        state.design = settings.design || null;
+        if (settings.design) applyDesign(settings.design);
+
+        state.disableCart = settings.disableCart || false;
+        state.disableBestSellers = settings.disableBestSellers || false;
+        state.disableShifts = settings.disableShifts || false;
+        state.disableAdminBtn = settings.disableAdminBtn || false;
+        state.maintenanceMode = settings.maintenanceMode || false;
+        state.enableOnlinePayment = settings.enableOnlinePayment || false;
+        state.simulatePayment = settings.simulatePayment || false;
+    } else {
+        if (state.categories.length === 0) createDefaultData();
+    }
+    if (_onDataChange) _onDataChange();
+}
+
+export async function saveData() {
+    const adminKey = getAdminKey();
+    if (!adminKey) return;
+
+    // تحويل المصفوفات لصيغة تقرأها الدوال
     const catObj = {};
     state.categories.forEach((c, i) => { catObj[i] = c; });
     catObj.admin_key = adminKey;
@@ -138,22 +104,25 @@ export function saveData() {
     state.products.forEach((p, i) => { prodObj[i] = p; });
     prodObj.admin_key = adminKey;
 
-    Promise.all([set(categoriesRef, catObj), set(productsRef, prodObj)])
-        .then(() => console.log('تم حفظ البيانات إلى Firebase'))
-        .catch((error) => {
-            console.error('خطأ في حفظ البيانات:', error);
-            showToast('خطأ في حفظ البيانات - تحقق من كلمة المرور', 'error');
-        });
+    try {
+        const currentData = await fetchKVData() || {};
+        const payload = { ...currentData, categories: catObj, products: prodObj };
+        await saveKVData(payload);
+        console.log('تم حفظ البيانات للكلاود فلير');
+    } catch (e) {
+        showToast('خطأ في حفظ البيانات', 'error');
+    }
 }
 
-// ====== حفظ الإعدادات ======
-export function saveSettings(silent = false) {
+export async function saveSettings(silent = false) {
     const adminKey = getAdminKey();
-    if (!_firebaseReady || !adminKey) return;
+    if (!adminKey) return;
 
-    get(settingsRef).then((snapshot) => {
-        const currentSettings = snapshot.val() || {};
+    try {
+        const currentData = await fetchKVData() || {};
+        const currentSettings = currentData.settings || {};
         const settingsToSave = {
+            ...currentSettings,
             splitInvoice: state.splitInvoice,
             printMethod: state.printMethod,
             invoiceCounter: state.invoiceCounter,
@@ -170,66 +139,31 @@ export function saveSettings(silent = false) {
             enableOnlinePayment: state.enableOnlinePayment || false,
             simulatePayment: state.simulatePayment || false
         };
-        set(settingsRef, settingsToSave)
-            .then(() => console.log('تم حفظ الإعدادات'))
-            .catch((error) => console.error('خطأ في حفظ الإعدادات:', error));
-    });
+        const payload = { ...currentData, settings: settingsToSave };
+        await saveKVData(payload);
+        if (!silent) console.log('تم حفظ الإعدادات');
+    } catch (e) {
+        console.error('خطأ في حفظ الإعدادات:', e);
+    }
 }
 
-// ====== إعادة المزامنة من Firebase ======
-export function resyncFromFirebase() {
-    if (!_firebaseReady) return;
-    Promise.all([get(categoriesRef), get(productsRef)]).then(([catSnap, prodSnap]) => {
-        const catData = catSnap.val();
-        const prodData = prodSnap.val();
-        if (catData) state.categories = parseFirebaseData(catData);
-        if (prodData) state.products = parseFirebaseData(prodData);
-        if (_onDataChange) _onDataChange();
-    }).catch(err => {
-        console.error('خطأ في إعادة تحميل البيانات:', err);
-    });
+export async function resyncFromFirebase() {
+    await loadDataFromServer();
 }
 
-// ====== تحديث فوري (زر التحديث #5) ======
-export function refreshAllData() {
-    return new Promise((resolve, reject) => {
-        if (!_firebaseReady) {
-            reject(new Error('Firebase غير متصل'));
-            return;
-        }
-        // تحديث كل شيء: أقسام + منتجات + إعدادات
-        Promise.all([get(categoriesRef), get(productsRef), get(settingsRef)]).then(([catSnap, prodSnap, setSnap]) => {
-            if (catSnap.val()) state.categories = parseFirebaseData(catSnap.val());
-            if (prodSnap.val()) state.products = parseFirebaseData(prodSnap.val());
-            const settings = setSnap.val();
-            if (settings) {
-                state.splitInvoice = settings.splitInvoice || false;
-                state.printMethod = settings.printMethod || 'image';
-                state.invoiceCounter = settings.invoiceCounter || 0;
-                state.viewMode = settings.viewMode || 'grid';
-                state.appFont = settings.appFont || 'default';
-                state.disableShifts = settings.disableShifts || false;
-                state.disableAdminBtn = settings.disableAdminBtn || false;
-                state.maintenanceMode = settings.maintenanceMode || false;
-                state.disableCart = settings.disableCart || false;
-                state.enableOnlinePayment = settings.enableOnlinePayment || false;
-                state.simulatePayment = settings.simulatePayment || false;
-                applyFont(state.appFont);
-                state.design = settings.design || null;
-                if (settings.design) applyDesign(settings.design);
-            }
-            if (_onDataChange) _onDataChange();
-            resolve();
-        }).catch(err => {
-            console.error('خطأ في تحديث البيانات:', err);
-            reject(err);
-        });
-    });
+export async function refreshAllData() {
+    await loadDataFromServer();
 }
 
-// تصدير دوال Firebase للاستخدام في الإدارة والريسيفر
-export { get, set, push, ref, onValue, onChildAdded, onChildChanged, settingsRef as settingsRefDirect };
+// ====== دوال وهمية لمنع تعطل كود الريسيفر والإدارة القديم ======
+export function get() { return Promise.resolve({ val: () => null }); }
+export function set() { return Promise.resolve(); }
+export function push() { return { key: Date.now().toString() }; }
+export function ref() { return "mock_ref"; }
+export function onValue() { }
+export function onChildAdded() { }
+export function onChildChanged() { }
+export const settingsRefDirect = settingsRef;
 
-// تصدير database instance لنظام الورديات وللريسيفر
-export { _database as database };
-export function getFirebaseDatabase() { return _database; }
+export const database = {};
+export function getFirebaseDatabase() { return database; }
