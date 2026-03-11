@@ -3470,11 +3470,9 @@ input[type="range"] {
 
 .best-sellers-track {
     display: flex;
-    gap: 14px;
     width: max-content;
     animation: scrollCarousel linear infinite;
-    direction: ltr;
-    /* نجبر الاتجاه على LTR لحساب الـ translate صح */
+    direction: rtl;
 }
 
 @keyframes scrollCarousel {
@@ -3483,13 +3481,14 @@ input[type="range"] {
     }
 
     100% {
-        transform: translateX(-50%);
+        transform: translateX(50%);
     }
 }
 
 .best-seller-card {
     flex: 0 0 auto;
     width: 150px;
+    margin-left: 14px;
     background: #fff;
     border-radius: 14px;
     overflow: hidden;

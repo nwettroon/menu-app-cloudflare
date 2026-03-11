@@ -31,10 +31,10 @@ let _onDataChange = null;
 export function setDataChangeHandler(fn) { _onDataChange = fn; }
 
 // ====== دوال الاتصال مع Cloudflare KV API ======
-async function fetchKVData() {
+async function fetchKVData(customClientId = null) {
     // نجلب البيانات مع دعم الفروع
     const branchParam = currentBranchId === 'main' ? '' : `-${currentBranchId}`;
-    const clientIdWithBranch = CLIENT.id + branchParam;
+    const clientIdWithBranch = customClientId || (CLIENT.id + branchParam);
     try {
         const res = await fetch(`/api/data?client=${clientIdWithBranch}`);
         const data = await res.json();
@@ -45,9 +45,9 @@ async function fetchKVData() {
     }
 }
 
-async function saveKVData(payload) {
+async function saveKVData(payload, customClientId = null) {
     const branchParam = currentBranchId === 'main' ? '' : `-${currentBranchId}`;
-    const clientIdWithBranch = CLIENT.id + branchParam;
+    const clientIdWithBranch = customClientId || (CLIENT.id + branchParam);
     try {
         await fetch(`/api/data?client=${clientIdWithBranch}`, {
             method: 'POST',
@@ -62,6 +62,17 @@ async function saveKVData(payload) {
 
 // ====== تحميل وحفظ البيانات للنظام ======
 export async function loadDataFromServer() {
+    // التحقق من وجود الفرع
+    if (currentBranchId !== 'main') {
+        const mainData = await fetchKVData(CLIENT.id);
+        const branches = mainData ? mainData.branches_list : null;
+        if (!branches || !branches[currentBranchId]) {
+            console.warn("Branch not found, redirecting to main...");
+            window.location.href = '?branch=main';
+            return;
+        }
+    }
+
     const data = await fetchKVData();
     if (data) {
         state.categories = data.categories ? parseFirebaseData(data.categories) : [];
@@ -155,9 +166,24 @@ export async function refreshAllData() {
     await loadDataFromServer();
 }
 
-// ====== دوال وهمية لمنع تعطل كود الريسيفر والإدارة القديم ======
-export function get() { return Promise.resolve({ val: () => null }); }
-export function set() { return Promise.resolve(); }
+// ====== دوال اتصال الفروع والوردية ======
+export async function get(pathOrRef) {
+    if (pathOrRef === branchesListRef) {
+        const data = await fetchKVData(CLIENT.id);
+        return { val: () => (data ? data.branches_list : null) };
+    }
+    return Promise.resolve({ val: () => null });
+}
+
+export async function set(pathOrRef, payload) {
+    if (pathOrRef === branchesListRef) {
+        const data = await fetchKVData(CLIENT.id) || {};
+        data.branches_list = payload;
+        await saveKVData(data, CLIENT.id);
+        return Promise.resolve();
+    }
+    return Promise.resolve();
+}
 export function push() { return { key: Date.now().toString() }; }
 export function ref() { return "mock_ref"; }
 export function onValue() { }
