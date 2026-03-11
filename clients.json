@@ -1,18 +1,9 @@
 {
-  "thejuicytaste": {
-    "name": "الكوخ",
-    "domains": [
-      "thejuicytaste.web.app",
-      "thejuicytaste.firebaseapp.com",
-      "thejuicytaste.menu-app-cloudflare.pages.dev"
-    ]
-  },
-  "vitamin-c-5c074": {
+  "fruitofrefreshingtaste": {
     "name": "ثمرة المذاق المنعش",
     "domains": [
-      "vitamin-c-5c074.web.app",
-      "vitamin-c-5c074.firebaseapp.com",
-      "vitamin-c-5c074.menu-app-cloudflare.pages.dev"
+      "menu-app-cloudflare.pages.dev",
+      "fruitofrefreshingtaste.menu-app-cloudflare.pages.dev"
     ],
     "moyasarPublishableKey": "pk_test_h67jUi6ZKv49amLbX9c3uu74av5ddUP9UEPntMQt"
   }
