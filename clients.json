@@ -1,0 +1,41 @@
+{
+  "clients": {
+    "thejuicytaste": {
+      "name": "الكوخ",
+      "firebaseProjectId": "thejuicytaste",
+      "domains": [
+        "thejuicytaste.web.app",
+        "thejuicytaste.firebaseapp.com"
+      ],
+      "firebaseConfig": {
+        "apiKey": "AIzaSyAMp7SMpsiq6ri8zuvpVzN0nq_ydd8tODE",
+        "authDomain": "thejuicytaste.firebaseapp.com",
+        "databaseURL": "https://thejuicytaste-default-rtdb.firebaseio.com",
+        "projectId": "thejuicytaste",
+        "storageBucket": "thejuicytaste.firebasestorage.app",
+        "messagingSenderId": "423331500604",
+        "appId": "1:423331500604:web:c457a9e1d930bb24bc6939",
+        "measurementId": "G-K14QMMVMS1"
+      }
+    },
+    "vitamin-c-5c074": {
+      "name": "ثمرة المذاق المنعش",
+      "firebaseProjectId": "vitamin-c-5c074",
+      "domains": [
+        "vitamin-c-5c074.web.app",
+        "vitamin-c-5c074.firebaseapp.com"
+      ],
+      "moyasarPublishableKey": "pk_test_h67jUi6ZKv49amLbX9c3uu74av5ddUP9UEPntMQt",
+      "firebaseConfig": {
+        "apiKey": "AIzaSyDtYw7Znwp9jO2npbNP361SZnUQWivk6bM",
+        "authDomain": "vitamin-c-5c074.firebaseapp.com",
+        "databaseURL": "https://vitamin-c-5c074-default-rtdb.firebaseio.com",
+        "projectId": "vitamin-c-5c074",
+        "storageBucket": "vitamin-c-5c074.firebasestorage.app",
+        "messagingSenderId": "315684932125",
+        "appId": "1:315684932125:web:f927928ed8d361cbb094f4",
+        "measurementId": "G-T129CGNESM"
+      }
+    }
+  }
+}

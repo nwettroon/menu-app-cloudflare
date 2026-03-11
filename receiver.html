@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شاشة الكاشير | الطلبات السحابية</title>
+    <!-- Include html2canvas for Android Printing Support -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+            background: #f0f2f5;
+            color: #333;
+        }
+
+        .header {
+            background: #2c3e50;
+            color: #fff;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-badge {
+            background: #e67e22;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .status-badge.connected {
+            background: #27ae60;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 0 15px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            background: #3498db;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .btn:hover {
+            background: #2980b9;
+        }
+
+        .btn-test {
+            background: #9b59b6;
+        }
+
+        .orders-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+        }
+
+        .order-card {
+            background: #fff;
+            border-radius: 8px;
+            border-right: 4px solid #3498db;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px dashed #eee;
+            padding-bottom: 10px;
+        }
+
+        .order-number {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .order-time {
+            font-size: 13px;
+            color: #7f8c8d;
+        }
+
+        .customer-info {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .customer-info span {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .items-list {
+            list-style: none;
+            flex-grow: 1;
+        }
+
+        .items-list li {
+            font-size: 15px;
+            padding: 5px 0;
+            border-bottom: 1px solid #f1f2f6;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .order-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .total-price {
+            font-size: 18px;
+            font-weight: bold;
+            color: #27ae60;
+        }
+
+        .reprint-btn {
+            background: #7f8c8d;
+            color: #fff;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .print-btn {
+            background: #27ae60;
+            color: #fff;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px 0;
+            color: #95a5a6;
+            font-size: 18px;
+            grid-column: 1 / -1;
+        }
+
+        #toastContainer {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+        }
+
+        .toast {
+            background: #333;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .toast.success {
+            background: #27ae60;
+        }
+
+        .toast.error {
+            background: #e74c3c;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <h1>
+            <span style="font-size: 24px;">☁️</span>
+            شاشة الكاشير السحابية
+        </h1>
+        <div id="connectionStatus" class="status-badge">جاري الاتصال بقاعدة البيانات...</div>
+    </div>
+
+    <div class="container">
+        <!-- Audio elements for chime sound -->
+        <!-- Use a pleasant ding sound encoded in base64 to avoid missing files -->
+        <audio id="chimeSound" preload="auto">
+            <source
+                src="data:audio/wav;base64,UklGRnwGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YVgGAACAfoSFiYyPkpWZnJ6goaSlpqeoq62ur7Cys7S1tre4ubq7vL2+v8DAwcLDxMXGx8jJy8zNzs/Q0dLT1NXX2Nna29zd3t/g4eLj5OXm5+jp6+zt7u/w8fLz9PX29/j5+vv8/f7/AAAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAhIiMkJSYnKCkqKywtLi8wMTIzNDU2Nzg5Ojs8PT4/QEFCQ0RFRkdISUpLTE1OT1BRUlNUVVZXWFlaW1xdXl9gYWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXp7fH1+f4AAgH6EhoeJiouMjY6PkJGSk5SVlpeYmZqbnJ2en6ChoqOkpaanqKmqqaqpqamnpaOin52bmZiWlJOPjYyLioiHh4SDg4GAf39+fn18fHt7eno="
+                type="audio/wav">
+        </audio>
+
+        <div class="controls">
+            <button class="btn btn-test" id="testSoundBtn">🔔 اختبار الصوت</button>
+            <div style="margin-right: 15px; display: flex; align-items: center; gap: 8px;">
+                <label
+                    style="cursor: pointer; display: flex; align-items: center; gap: 5px; font-weight: bold; font-size: 14px; background: #fff; padding: 5px 10px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <input type="checkbox" id="autoPrintToggle" style="width: 18px; height: 18px;">
+                    الطباعة التلقائية (عند الاستلام)
+                </label>
+            </div>
+            <div style="color: #666; font-size: 14px; display: flex; align-items: center; margin-right: auto;">
+                <strong>الفرع المشبوك:</strong> <span id="branchNameDisplay"
+                    style="margin-right: 5px; color: #2980b9;">-</span>
+            </div>
+        </div>
+
+        <div id="ordersGrid" class="orders-grid">
+            <!-- Orders will load here -->
+            <div class="empty-state" id="emptyState">
+                <div style="font-size: 40px; margin-bottom: 10px;">🎧</div>
+                النظام جاهز لاستقبال الطلبات والسماع للرنين...
+            </div>
+        </div>
+    </div>
+
+    <div id="toastContainer"></div>
+
+    <!-- Scripts: same infrastructure as the app -->
+    <script type="module" src="js/receiver.js"></script>
+</body>
+
+</html>

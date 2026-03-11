@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="ar">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- منع الكاش -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>جاري التحميل...</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#d4a043">
+
+    <!-- Moyasar Libraries -->
+    <link rel="stylesheet" href="https://cdn.moyasar.com/mpf/1.14.0/moyasar.css" />
+    <script src="https://cdn.moyasar.com/mpf/1.14.0/moyasar.js"></script>
+
+    <!-- Google Translate Script (Deferred to improve load performance) -->
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            if (window.google && window.google.translate) {
+                new google.translate.TranslateElement({
+                    pageLanguage: 'ar'
+                }, 'google_translate_element');
+            }
+        }
+    </script>
+    <script type="text/javascript"
+        src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" defer></script>
+
+    <!-- === تحميل اسم العميل تلقائياً في العنوان === -->
+    <script type="module">
+        import { CLIENT } from './config.js';
+        // تحديث عنوان الصفحة
+        document.title = CLIENT.name;
+        // تحديث اسم المطعم والشعار بعد تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', () => {
+            const nameEl = document.getElementById('restaurantName');
+            if (nameEl) nameEl.textContent = CLIENT.name;
+            const logoEl = document.getElementById('headerLogo');
+            if (logoEl) logoEl.alt = 'شعار ' + CLIENT.name;
+        });
+    </script>
+</head>
+
+<body dir="rtl">
+    <!-- Google Translate Element (Hidden) -->
+    <div id="google_translate_element" style="display:none;"></div>
+
+    <!-- Header Section -->
+    <header class="header-section">
+        <div class="logo-section">
+            <img src="images/logo.jpg" alt="شعار" class="logo" id="headerLogo">
+            <h1 class="restaurant-name" id="restaurantName">...</h1>
+        </div>
+        <div class="categories-section" id="categoriesSection"></div>
+    </header>
+
+    <!-- Categories Bar (Fixed) -->
+    <nav class="categories-bar" id="categoriesBar">
+        <div class="categories-scroll">
+            <div id="categoriesList"></div>
+        </div>
+        <div class="controls-section">
+            <div id="shiftStatusIndicator"
+                style="font-size:12px;padding:4px 8px;border-radius:6px;background:rgba(0,0,0,0.07);color:#555;display:flex;align-items:center;gap:4px;white-space:nowrap;">
+            </div>
+            <button class="refresh-btn" id="refreshBtn" title="تحديث الموقع">🔄</button>
+            <button class="view-toggle-btn" id="viewToggleBtn" title="تبديل العرض">☰</button>
+            <button class="shifts-btn" id="shiftsBtn" title="إدارة الورديات">🕐</button>
+            <button class="admin-btn" id="adminBtn" title="لوحة التحكم">⚙️</button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div id="productsContainer"></div>
+    </main>
+
+    <!-- Cart Button -->
+    <div class="cart-fixed">
+        <button class="cart-btn" id="cartBtn">
+            <span class="cart-icon">🛒</span>
+            <span class="cart-label" id="cartLabel">دفع</span>
+            <span class="cart-count" id="cartCount">0</span>
+        </button>
+        <button class="language-btn" id="languageBtn" title="اختر اللغة">🌐 لغة | Language</button>
+        <div class="language-dropdown" id="languageDropdown">
+            <button class="lang-option notranslate" translate="no" data-lang="ar" data-google-lang="ar"
+                title="العربية">🇸🇦 العربية</button>
+            <button class="lang-option notranslate" translate="no" data-lang="en" data-google-lang="en"
+                title="English">🇺🇸 English</button>
+            <button class="lang-option notranslate" translate="no" data-lang="ur" data-google-lang="ur"
+                title="اردو">🇵🇰 اردو</button>
+            <button class="lang-option notranslate" translate="no" data-lang="ru" data-google-lang="ru"
+                title="Русский">🇷🇺 Русский</button>
+            <button class="lang-option notranslate" translate="no" data-lang="uz" data-google-lang="uz"
+                title="Oʻzbekcha">🇺🇿 Oʻzbekcha</button>
+            <button class="lang-option notranslate" translate="no" data-lang="ja" data-google-lang="ja" title="日本語">🇯🇵
+                日本語</button>
+            <button class="lang-option notranslate" translate="no" data-lang="id" data-google-lang="id"
+                title="Bahasa Indonesia">🇮🇩 Indonesia</button>
+            <button class="lang-option notranslate" translate="no" data-lang="fil" data-google-lang="fil"
+                title="Filipino">🇵🇭 Filipino</button>
+            <button class="lang-option notranslate" translate="no" data-lang="ha" data-google-lang="ha"
+                title="Hausa">🇳🇬 Hausa</button>
+            <button class="lang-option notranslate" translate="no" data-lang="zh-SG" data-google-lang="zh-CN"
+                title="中文 (Singapore)">🇸🇬 中文</button>
+            <button class="lang-option notranslate" translate="no" data-lang="ms" data-google-lang="ms"
+                title="Bahasa Melayu">🇲🇾 Melayu</button>
+            <button class="lang-option notranslate" translate="no" data-lang="zh" data-google-lang="zh-CN"
+                title="中文">🇨🇳 中文</button>
+            <button class="lang-option notranslate" translate="no" data-lang="mn" data-google-lang="mn"
+                title="Монгол">🇲🇳 Монгол</button>
+            <button class="lang-option notranslate" translate="no" data-lang="fr" data-google-lang="fr"
+                title="Français">🇫🇷 Français</button>
+            <button class="lang-option notranslate" translate="no" data-lang="tr" data-google-lang="tr"
+                title="Türkçe">🇹🇷 Türkçe</button>
+            <button class="lang-option notranslate" translate="no" data-lang="fa" data-google-lang="fa"
+                title="فارسی">🇮🇷 فارسی</button>
+        </div>
+    </div>
+
+    <!-- تذييل الصفحة (Footer) -->
+    <footer class="site-footer" id="siteFooter"></footer>
+
+    <!-- Product Modal -->
+    <div class="modal" id="productModal">
+        <div class="modal-content">
+            <button class="close-modal" id="closeModal">&times;</button>
+            <div class="modal-body">
+                <div class="modal-image">
+                    <img id="modalProductImg" src="" alt="">
+                </div>
+                <div class="modal-info">
+                    <h2 id="modalProductName"></h2>
+                    <div id="modalProductCalories" class="product-calories"
+                        style="position: static; display: inline-flex; margin-bottom: 15px;"></div>
+                    <div class="types-section" id="typesSection" style="display: none;">
+                        <label id="typesLabel">النوع:</label>
+                        <div id="productTypesList" class="types-list"></div>
+                    </div>
+                    <div id="typeGroupsSection"></div>
+                    <div class="sizes-section">
+                        <label id="sizesLabel">المقاسات:</label>
+                        <div id="productSizesList" class="sizes-list"></div>
+                    </div>
+                    <div class="quantity-section" style="display: none;">
+                        <button class="qty-btn" id="qtyMinus">−</button>
+                        <span class="qty-display" id="qtyDisplay">1</span>
+                        <button class="qty-btn" id="qtyPlus">+</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cart Modal -->
+    <div class="modal" id="cartModal">
+        <div class="modal-content cart-modal-content">
+            <button class="close-modal" id="closeCart">&times;</button>
+            <h2 id="cartTitle">السلة</h2>
+            <p class="cart-subtitle" id="cartSubtitle">توجه الى الكاشير للدفع</p>
+            <div id="cartItemsList"></div>
+            <div class="cart-total">
+                <span id="totalLabel">الإجمالي:</span>
+                <span id="totalPrice">0</span> <span id="currencyLabel">ريال</span>
+            </div>
+            <button class="pay-btn" id="payBtn">دفع</button>
+        </div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div class="modal" id="adminModal">
+        <div class="modal-content admin-modal-content">
+            <button class="close-modal" id="closeAdmin">&times;</button>
+
+            <!-- Admin Tabs Navigation -->
+            <div class="admin-tabs-nav">
+                <button class="admin-tab-btn active" data-tab="tab-items">الأقسام والأصناف</button>
+                <button class="admin-tab-btn" data-tab="tab-stats">الإحصائيات</button>
+                <button class="admin-tab-btn" data-tab="tab-design">التصميم</button>
+                <button class="admin-tab-btn" data-tab="tab-branches">الفروع</button>
+                <button class="admin-tab-btn" data-tab="tab-settings">الإعدادات</button>
+            </div>
+
+            <div class="admin-panel">
+                <h2 id="adminTitle" style="display: flex; align-items: center; justify-content: center; gap: 10px;">لوحة
+                    التحكم <span id="currentBranchBadge"
+                        style="font-size: 14px; background: #ffeaa7; padding: 4px 10px; border-radius: 8px; color: #d63031; display: none;"></span>
+                </h2>
+
+                <div class="admin-tabs-content">
+                    <!-- Tab 0: Statistics -->
+                    <div id="tab-stats" class="admin-tab-pane">
+                        <div id="statsContainer" class="admin-section"></div>
+                    </div>
+
+                    <!-- Tab 1: Departments & Items -->
+                    <div id="tab-items" class="admin-tab-pane active">
+                        <div class="admin-section">
+                            <div
+                                style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
+                                <h3 id="categoriesManageTitle" style="margin:0;">إدارة الأقسام</h3>
+                                <button type="button" class="add-btn" id="syncAllItemsBtn"
+                                    style="background-color:#9b59b6; margin:0;">نشر وتزامن 🌍</button>
+                            </div>
+                            <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
+                                <button class="add-btn" id="addCategoryBtn">+ إضافة قسم</button>
+                                <button class="copy-btn" id="copyCategoryBtn" type="button">نسخ بيانات القسم</button>
+                                <button class="paste-btn" id="pasteCategoryBtn" type="button">لصق بيانات القسم</button>
+                            </div>
+                            <div id="adminCategoriesList"></div>
+                        </div>
+
+                        <div class="admin-section">
+                            <h3 id="productsManageTitle">إدارة المنتجات</h3>
+                            <select id="categorySelect"></select>
+                            <button class="add-btn" id="addProductBtn">+ إضافة منتج</button>
+                            <div id="adminProductsList"></div>
+                        </div>
+                    </div>
+
+                    <!-- Tab 2: Design -->
+                    <div id="tab-design" class="admin-tab-pane">
+                        <div class="admin-section">
+                            <div
+                                style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+                                <h3 id="designSettingsTitle" style="margin:0;">🎨 إعدادات المظهر المتقدمة</h3>
+                                <button type="button" class="add-btn" id="syncDesignBtn"
+                                    style="background-color:#9b59b6; margin:0;">نشر وتزامن 🌍</button>
+                            </div>
+
+                            <!-- الهوية البصرية -->
+                            <div class="design-group-section"
+                                style="background: #fff8f0; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #ffe8d0;">
+                                <h4
+                                    style="margin-bottom: 15px; color: #f26d21; display: flex; align-items: center; gap: 8px;">
+                                    🏢 الهوية اللوجو والشكل العام</h4>
+                                <div class="design-controls-grid">
+                                    <div class="design-control">
+                                        <label>حجم اللوجو (Logo Size)</label>
+                                        <input type="range" id="logoSizeRange" min="50" max="250" value="100">
+                                        <span class="range-value" id="logoSizeVal">100px</span>
+                                    </div>
+                                    <div class="design-control">
+                                        <label>زوايا العناصر (Border Radius)</label>
+                                        <input type="range" id="borderRadiusRange" min="0" max="40" value="15">
+                                        <span class="range-value" id="borderRadiusVal">15px</span>
+                                    </div>
+                                    <div class="design-control">
+                                        <label>قوة الظلال (Shadow Intensity)</label>
+                                        <input type="range" id="shadowIntensityRange" min="0" max="1" step="0.05"
+                                            value="0.1">
+                                        <span class="range-value" id="shadowIntensityVal">0.1</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- تنسيق الأقسام والمنتجات -->
+                            <div class="design-group-section"
+                                style="background: #f0f7ff; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #d0e8ff;">
+                                <h4
+                                    style="margin-bottom: 15px; color: #0066cc; display: flex; align-items: center; gap: 8px;">
+                                    📱 تنسيق العرض (Layout)</h4>
+                                <div class="design-controls-grid">
+                                    <div class="design-control">
+                                        <label>شكل صور الأقسام</label>
+                                        <select id="categoryShapeSelect">
+                                            <option value="50%">دائري (Circle)</option>
+                                            <option value="15px">مربع بحواف ناعمة (Rounded)</option>
+                                            <option value="0px">مربع (Square)</option>
+                                        </select>
+                                    </div>
+                                    <div class="design-control">
+                                        <label>أعمدة الموبايل (Grid)</label>
+                                        <select id="gridColumnsMobileSelect">
+                                            <option value="1">منتج واحد (1 column)</option>
+                                            <option value="2" selected>منتجين (2 columns)</option>
+                                            <option value="3">3 منتجات (3 columns)</option>
+                                            <option value="4">4 منتجات (4 columns)</option>
+                                        </select>
+                                    </div>
+                                    <div class="design-control">
+                                        <label>تأثير تفاعل البطاقة (Hover)</label>
+                                        <select id="cardHoverEffectSelect">
+                                            <option value="translate">ارتفاع بسيط (Lift)</option>
+                                            <option value="scale">تكبير (Zoom)</option>
+                                            <option value="glow">توهج (Glow)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- الألوان المتقدمة -->
+                            <div class="design-group-section"
+                                style="background: #fdf2f9; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #ffd0f0;">
+                                <h4
+                                    style="margin-bottom: 15px; color: #d81b60; display: flex; align-items: center; gap: 8px;">
+                                    🎨 الألوان المخصصة</h4>
+                                <div class="color-pickers-grid">
+                                    <div class="color-picker-item">
+                                        <input type="color" id="designPrimaryColor" value="#f26d21">
+                                        <label>اللون الرئيسي</label>
+                                    </div>
+                                    <div class="color-picker-item">
+                                        <input type="color" id="designBackgroundColor" value="#fff2e8">
+                                        <label>لون الخلفية</label>
+                                    </div>
+                                    <div class="color-picker-item">
+                                        <input type="color" id="designTextColor" value="#4a2c1a">
+                                        <label>لون النص</label>
+                                    </div>
+                                    <div class="color-picker-item">
+                                        <input type="color" id="designAccentColor" value="#2ecc71">
+                                        <label>اللون التكميلي</label>
+                                    </div>
+                                </div>
+                                <div class="design-control" style="margin-top: 15px;">
+                                    <label>تأثير شفافية الرأس (Header Blur)</label>
+                                    <input type="range" id="headerBlurRange" min="0" max="30" value="10">
+                                    <span class="range-value" id="headerBlurVal">10px</span>
+                                </div>
+                            </div>
+
+                            <!-- الخطوط وأحجام النصوص -->
+                            <div class="design-group-section"
+                                style="background: #f0fff4; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #d0ffd0;">
+                                <h4
+                                    style="margin-bottom: 15px; color: #28a745; display: flex; align-items: center; gap: 8px;">
+                                    🔤 الخطوط وتكبير النصوص</h4>
+                                <div class="design-controls-grid">
+                                    <div class="design-control">
+                                        <label>نوع الخط الحالي</label>
+                                        <select id="fontSelector"
+                                            style="width: 100%; padding: 8px; border-radius: 6px;"></select>
+                                    </div>
+                                    <div class="design-control">
+                                        <label>نسبة تكبير الخط (Font Scale)</label>
+                                        <input type="range" id="fontScaleRange" min="80" max="130" value="100">
+                                        <span class="range-value" id="fontScaleVal">100%</span>
+                                    </div>
+                                    <div class="design-control">
+                                        <label>حجم السعرات الحرارية</label>
+                                        <input type="range" id="caloriesScaleRange" min="50" max="150" value="100">
+                                        <span class="range-value" id="caloriesScaleVal">100%</span>
+                                    </div>
+                                    <div class="design-control">
+                                        <label>موضع السعرات (أفقي X)</label>
+                                        <input type="range" id="caloriesPosXRange" min="-50" max="50" value="0">
+                                        <span class="range-value" id="caloriesPosXVal">0px</span>
+                                    </div>
+                                    <div class="design-control">
+                                        <label>موضع السعرات (عمودي Y)</label>
+                                        <input type="range" id="caloriesPosYRange" min="-50" max="50" value="0">
+                                        <span class="range-value" id="caloriesPosYVal">0px</span>
+                                    </div>
+                                    <div class="design-control">
+                                        <label>مكان ظهور السعرات</label>
+                                        <select id="caloriesVisibilitySelect">
+                                            <option value="both" selected>في الخارج والداخل (الاثنين معاً)</option>
+                                            <option value="card">في بطاقة الصنف الخارجية فقط</option>
+                                            <option value="modal">في نافذة عرض الصنف الداخلية فقط</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ميزات التخصيص الإضافية -->
+                            <div class="design-group-section"
+                                style="background: #f9f0ff; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #ead0ff;">
+                                <h4
+                                    style="margin-bottom: 15px; color: #8a2be2; display: flex; align-items: center; gap: 8px;">
+                                    ✨ تخصيص متقدم والمزيد
+                                </h4>
+                                <div class="design-controls-grid">
+
+                                    <!-- Background Pattern -->
+                                    <div class="design-control">
+                                        <label>خلفية الموقع (Background Pattern)</label>
+                                        <select id="backgroundPatternSelect">
+                                            <option value="none" selected>سادة (None)</option>
+                                            <option
+                                                value="url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+PGNpcmNsZSBjeD0iMTAiIGN5PSIxMCIgcj0iMiIgZmlsbD0icmdiYSgwLDAsMCwwLjE1KSIvPjwvc3ZnPg==')">
+                                                نقاط بسيطة (Dots)</option>
+                                            <option
+                                                value="url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PHBhdGggZD0iTTAgMjBMNDAgMjBNMjAgMEwyMCA0MCIgc3Ryb2tlPSJyZ2JhKDAsMCwwLDAuMSkiIHN0cm9rZS13aWR0aD0iMSIvPjwvc3ZnPg==')">
+                                                شبكة (Grid)</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Background Gradient -->
+                                    <div class="design-control">
+                                        <label>تدرج الخلفية (Gradient)</label>
+                                        <select id="backgroundGradientSelect">
+                                            <option value="none" selected>بدون تدرج</option>
+                                            <option value="linear-gradient(to bottom, var(--light-peach), #ffffff)">تدرج
+                                                ناعم (Soft)</option>
+                                            <option
+                                                value="linear-gradient(135deg, var(--light-peach), var(--primary-orange))">
+                                                تدرج قوي (Strong)</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Dark Mode -->
+                                    <div class="design-control">
+                                        <label>الوضع الليلي (Dark Mode)</label>
+                                        <select id="darkModeSelect">
+                                            <option value="false" selected>إيقاف (Off)</option>
+                                            <option value="true">تفعيل (On)</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Button Style -->
+                                    <div class="design-control">
+                                        <label>شكل الأزرار (Button Style)</label>
+                                        <select id="buttonStyleSelect">
+                                            <option value="filled" selected>ممتلئ (Filled)</option>
+                                            <option value="outline">مفرغ (Outline)</option>
+                                            <option value="soft">ناعم (Soft)</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Image Border Width -->
+                                    <div class="design-control">
+                                        <label>إطار صور المنتجات (Image Border)</label>
+                                        <select id="imageBorderWidthSelect">
+                                            <option value="0" selected>بدون (None)</option>
+                                            <option value="2">رفيع (2px)</option>
+                                            <option value="4">سميك (4px)</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Price Position -->
+                                    <div class="design-control">
+                                        <label>مكان عرض السعر (Price Position)</label>
+                                        <select id="pricePositionSelect">
+                                            <option value="bottom" selected>تحت الاسم (Default)</option>
+                                            <option value="top">فوق الصورة (Top Right)</option>
+                                            <option value="button">بجوار زر الإضافة (Inside Button)</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Font Weight -->
+                                    <div class="design-control">
+                                        <label>سماكة الخط الأساسي (Font Weight)</label>
+                                        <select id="fontWeightSelect">
+                                            <option value="normal" selected>عادي (Normal)</option>
+                                            <option value="bold">عريض (Bold)</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Loading Spinner -->
+                                    <div class="design-control">
+                                        <label>شكل التحميل (Loading Spinner)</label>
+                                        <select id="loadingSpinnerSelect">
+                                            <option value="circle" selected>دائرة (Circle)</option>
+                                            <option value="dots">نقاط (Dots)</option>
+                                            <option value="none">بدون (None)</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Page Transition -->
+                                    <div class="design-control">
+                                        <label>حركة التنقل (Transition)</label>
+                                        <select id="pageTransitionSelect">
+                                            <option value="fade" selected>تلاشي (Fade)</option>
+                                            <option value="slide">انزلاق (Slide)</option>
+                                            <option value="scale">تكبير وتصغير (Scale)</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Cart Icon Style -->
+                                    <div class="design-control">
+                                        <label>أيقونة السلة (Cart Icon)</label>
+                                        <select id="cartIconStyleSelect">
+                                            <option value="default" selected>عربة التسوق 🛒</option>
+                                            <option value="bag">حقيبة تسوق 🛍️</option>
+                                            <option value="basket">سلة 🧺</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ألوان متقدمة إضافية ومحرر CSS -->
+                            <div class="design-group-section"
+                                style="background: #f0f7ff; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #d0e8ff;">
+                                <h4
+                                    style="margin-bottom: 15px; color: #0066cc; display: flex; align-items: center; gap: 8px;">
+                                    🖌️ ألوان الشارات ومحرر CSS
+                                </h4>
+                                <div class="color-pickers-grid" style="margin-bottom: 15px;">
+                                    <div class="color-picker-item">
+                                        <input type="color" id="badgeColorNew" value="#2ecc71">
+                                        <label>شارة جديد</label>
+                                    </div>
+                                    <div class="color-picker-item">
+                                        <input type="color" id="badgeColorBest" value="#ff4500">
+                                        <label>شارة الأكثر مبيعاً</label>
+                                    </div>
+                                    <div class="color-picker-item">
+                                        <input type="color" id="cartBadgeColor" value="#ff0000">
+                                        <label>فقاعة السلة</label>
+                                    </div>
+                                </div>
+
+                                <div class="design-control" style="margin-bottom: 15px;">
+                                    <label>نص الفوتر (Footer Text)</label>
+                                    <input type="text" id="footerTextInput"
+                                        placeholder="مثال: حقوق الطبع والنشر محفوظة © 2026"
+                                        style="padding: 8px; border-radius: 6px; border: 1px solid #ccc; width: 100%;">
+                                </div>
+
+                                <div class="design-control">
+                                    <label>محرر CSS مخصص (Custom CSS)</label>
+                                    <textarea id="customCSSTextarea" rows="4" placeholder="أضف أكواد CSS المخصصة هنا..."
+                                        style="padding: 8px; border-radius: 6px; border: 1px solid #ccc; width: 100%; direction: ltr; font-family: monospace;"></textarea>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; flex-direction: column; gap: 10px;">
+                                <div style="display: flex; gap: 10px;">
+                                    <button class="add-btn" id="saveDesignBtn"
+                                        style="flex: 1; border-radius: 10px; font-weight: bold; font-size: 16px;">💾 حفظ
+                                        التعديلات</button>
+                                    <button class="cancel-btn" id="cancelDesignBtn"
+                                        style="flex: 1; border-radius: 10px; background: #e74c3c; font-weight: bold; font-size: 16px;">❌
+                                        إلغاء التعديلات</button>
+                                </div>
+                                <button class="add-btn" id="resetDesignBtn"
+                                    style="background: #666; width: 100%; border-radius: 10px;">🔄 استعادة الإعدادات
+                                    الافتراضية</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab Branches -->
+                    <div id="tab-branches" class="admin-tab-pane">
+                        <div class="admin-section">
+                            <h3 id="branchesTitle">🏢 إدارة الفروع</h3>
+                            <div
+                                style="background: #eef2f5; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #d1d8df;">
+                                <h4 style="margin-bottom: 10px;">إضافة فرع جديد</h4>
+                                <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px;">
+                                    <input type="text" id="newBranchName"
+                                        placeholder="اسم الفرع بالإنجليزي (مثل: Jeddah Branch)"
+                                        style="padding:10px; border-radius:8px; border:1px solid #ccc; font-family: sans-serif;"
+                                        dir="ltr">
+                                    <input type="text" id="newBranchId" placeholder="معرف الفرع (سيتم تعبئته تلقائياً)"
+                                        style="padding:10px; border-radius:8px; border:1px solid #ccc; font-family: monospace; background: #e9ecef; color: #666; cursor: not-allowed;"
+                                        dir="ltr" readonly>
+                                </div>
+                                <button class="add-btn" id="addBranchBtn" style="width: 100%; border-radius: 8px;">➕
+                                    إضافة وضبط فرع جديد</button>
+                                <p style="font-size: 11px; color: #666; margin-top: 5px;">* عند إضافة الفرع سيتم توجيهك
+                                    مباشرة لإعداداته لتخصيص القائمة والتصميم.</p>
+                            </div>
+
+                            <h4>قائمة الفروع الحالية</h4>
+                            <div id="branchesListContainer" style="margin-top: 10px;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Tab 3: Settings -->
+                    <div id="tab-settings" class="admin-tab-pane">
+                        <div class="admin-section">
+                            <h3 id="settingsTitle">⚙️ الإعدادات العامة</h3>
+
+                            <!-- إعداد تقسيم الفاتورة -->
+                            <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                    <input type="checkbox" id="splitInvoiceCheckbox"
+                                        style="width: 20px; height: 20px; cursor: pointer;">
+                                    <span style="font-size: 14px; font-weight: 600;">تقسيم الفاتورة حسب الأقسام</span>
+                                </label>
+                                <p style="margin: 8px 0 0 30px; font-size: 12px; color: #666;">
+                                    عند التفعيل: طباعة فاتورة كاملة للعميل + فواتير منفصلة لكل قسم
+                                </p>
+                            </div>
+
+                            <!-- إعداد تعطيل الورديات -->
+                            <div
+                                style="background: #fdf0f0; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 2px solid #e74c3c;">
+                                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                    <input type="checkbox" id="disableShiftsCheckbox"
+                                        style="width: 20px; height: 20px; cursor: pointer;">
+                                    <span style="font-size: 14px; font-weight: 600; color: #c0392b;">تعطيل نظام الورديات
+                                        بالكامل</span>
+                                </label>
+                                <p style="margin: 8px 0 0 30px; font-size: 12px; color: #666;">
+                                    عند التفعيل: سيختفي نظام الورديات ليتمكن العملاء من طلب طلباتهم الشفهية المباشرة
+                                    (طلب مسبق ذاتي).
+                                </p>
+                            </div>
+
+                            <!-- إعداد تعطيل الطلبات (البيع) -->
+                            <div
+                                style="background: #fdf0f0; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 2px solid #e74c3c;">
+                                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                    <input type="checkbox" id="disableCartCheckbox"
+                                        style="width: 20px; height: 20px; cursor: pointer;">
+                                    <span style="font-size: 14px; font-weight: 600; color: #c0392b;">تعطيل نظام المبيعات
+                                        (الطلبات)</span>
+                                </label>
+                                <p style="margin: 8px 0 0 30px; font-size: 12px; color: #666;">
+                                    عند التفعيل: سيختفي زر دفع وأزرار إضافة المنتجات للسلة، ويصبح المنيو للعرض فقط.
+                                </p>
+                            </div>
+
+                            <!-- إعداد الطلب أونلاين (الدفع الإلكتروني) -->
+                            <div id="onlinePaymentSettings"
+                                style="background: #e9f7ef; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 2px solid #2ecc71;">
+                                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                    <input type="checkbox" id="enableOnlinePaymentCheckbox"
+                                        style="width: 20px; height: 20px; cursor: pointer;">
+                                    <span style="font-size: 14px; font-weight: 600; color: #2ecc71;">تفعيل الدفع
+                                        الإلكتروني (الاستلام أو التجهيز) 🌐</span>
+                                </label>
+                                <p style="margin: 8px 0 0 30px; font-size: 12px; color: #666;">
+                                    عند التفعيل: سيظهر للعميل خيار الدفع الإلكتروني (Apple Pay والبطاقات) لطلب الأوردر
+                                    عن بعد.
+                                </p>
+                                <p id="moyasarKeyWarning"
+                                    style="color: #c0392b; font-size: 12px; margin: 8px 0 0 30px; font-weight: bold; display: none;">
+                                    ⚠️ بوابة الدفع غير مفعلة في بيانات العميل (لا يمكن استخدام الميزة). أضفها في لوحة
+                                    العملاء أولاً.
+                                </p>
+
+                                <div style="margin: 15px 0 0 30px;">
+                                    <label
+                                        style="display: flex; align-items: center; gap: 8px; cursor: pointer; border-top: 1px solid #ddd; padding-top: 10px;">
+                                        <input type="checkbox" id="simulatePaymentCheckbox"
+                                            style="width: 18px; height: 18px; cursor: pointer;">
+                                        <span style="font-size: 13px; font-weight: bold; color: #f39c12;">تفعيل وضع
+                                            المحاكاة والصيانة (للطلبات الوهمية بدون دفع حقيقي)</span>
+                                    </label>
+                                </div>
+                                <div id="receiverLinkContainer"
+                                    style="margin: 15px 0 0 30px; display: none; background: #fff; padding: 10px; border-radius: 6px; border: 1px dashed #2ecc71;">
+                                    <p style="font-size: 12px; color: #333; margin-bottom: 5px; font-weight: bold;">رابط
+                                        شاشة استلام الطلبات للفرع (يفتح في نظام الكاشير):</p>
+                                    <a id="receiverLink" href="#" target="_blank"
+                                        style="font-size: 13px; color: #0066cc; word-break: break-all;"></a>
+                                </div>
+                            </div>
+
+
+                            <!-- إعداد طريقة الطباعة -->
+                            <div
+                                style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 2px solid #ffc107;">
+                                <div style="margin-bottom: 10px;">
+                                    <span style="font-size: 14px; font-weight: 600;">🖨️ طريقة الطباعة (أندرويد)</span>
+                                </div>
+                                <label
+                                    style="display: flex; align-items: center; gap: 10px; cursor: pointer; margin-bottom: 8px;">
+                                    <input type="radio" name="printMethod" value="image" id="printMethodImage"
+                                        style="width: 18px; height: 18px; cursor: pointer;">
+                                    <span style="font-size: 14px;"><strong>طباعة بالصورة</strong> <span
+                                            style="color: #28a745;">✓ (موصى به - عربي مثالي)</span></span>
+                                </label>
+                                <p style="margin: 3px 0 10px 28px; font-size: 11px; color: #666;">تحويل الفاتورة إلى
+                                    صورة - يضمن عربية 100% بدون مشاكل ترميز</p>
+                                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                    <input type="radio" name="printMethod" value="text" id="printMethodText"
+                                        style="width: 18px; height: 18px; cursor: pointer;">
+                                    <span style="font-size: 14px;"><strong>طباعة نصية</strong> <span
+                                            style="color: #666;">(أسرع لكن قد تحتاج ضبط CP864)</span></span>
+                                </label>
+                                <p style="margin: 3px 0 0 28px; font-size: 11px; color: #666;">استخدام أوامر ESC/POS -
+                                    قد تظهر رموز غريبة بدل العربية</p>
+                            </div>
+
+                            <!-- تغيير كلمة مرور لوحة التحكم -->
+                            <div id="changePasswordSection"
+                                style="background: #e9f7ef; padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #c8e6c9;">
+                                <div style="margin-bottom:8px; font-weight:600;">🗝️ كلمة مرور الدخول إلى لوحة التحكم
+                                </div>
+                                <div style="display:flex; gap:8px; align-items:center;">
+                                    <input id="newAdminPassword" type="password" placeholder="كلمة المرور الجديدة"
+                                        style="flex:1; padding:8px; border-radius:6px; border:1px solid #ddd;">
+                                    <input id="confirmAdminPassword" type="password" placeholder="تأكيد كلمة المرور"
+                                        style="flex:1; padding:8px; border-radius:6px; border:1px solid #ddd;">
+                                    <button class="add-btn" id="changeAdminPasswordBtn"
+                                        style="background-color:#0066cc;">حفظ</button>
+                                </div>
+                                <p style="margin-top:8px; font-size:12px; color:#666;">أدخل كلمة المرور الجديدة واضغط
+                                    حفظ</p>
+                            </div>
+
+                            <!-- تصدير واستيراد البيانات -->
+                            <div class="admin-section" style="padding:0; border:none; margin-top:20px;">
+                                <h3 id="exportDataTitle">تصدير واستيراد البيانات</h3>
+                                <input type="file" id="importDataFile" accept=".json" style="display:none;">
+                                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+                                    <button class="add-btn" id="exportDataBtn"
+                                        style="background-color: #27ae60;margin:0;">📥 تصدير الأصناف والأقسام</button>
+                                    <button class="add-btn" id="importDataBtn"
+                                        style="background-color: #3498db;margin:0;">📤 استيراد الأصناف والأقسام</button>
+                                    <button class="add-btn" id="resetInvoiceCounterBtn"
+                                        style="background-color: #e74c3c;margin:0;">🔁 إعادة تعيين عداد
+                                        الفواتير</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Product Modal -->
+    <div class="modal" id="editProductModal">
+        <div class="modal-content form-modal">
+            <h2 id="editProductTitle">تعديل المنتج</h2>
+            <div class="edit-sizes-controls" style="position: absolute; top: 16px; left: 16px; display:flex; gap:8px;">
+                <button type="button" class="copy-btn" id="copySizesBtn">نسخ الأحجام</button>
+                <button type="button" class="paste-btn" id="pasteSizesBtn">لصق الأحجام</button>
+            </div>
+            <div style="position: absolute; top: 10px; right: 10px; display: flex; gap: 5px;">
+                <button class="close-modal" id="closeEditProduct" style="position: static;">&times;</button>
+                <button type="button" class="close-modal" id="backEditProduct"
+                    style="position: static; font-size: 16px; padding: 0 10px;">عودة</button>
+            </div>
+
+            <form id="editProductForm">
+                <!-- بيانات المنتج -->
+                <div class="form-section">
+                    <label id="editProductCategoryLabel">القسم المستهدف:</label>
+                    <select id="productCategory" required></select>
+                </div>
+
+                <div class="form-section">
+                    <input type="text" id="productName" placeholder="اسم المنتج (مثال: شاورما)" required>
+                </div>
+                <div class="form-section">
+                    <label>السعرات الحرارية:</label>
+                    <div style="display:flex; gap:8px;">
+                        <input type="number" id="productCalories" placeholder="السعرات (اختياري)" style="flex:1;">
+                        <button type="button" class="add-btn" id="magicCaloriesBtn"
+                            style="padding: 0 15px; margin: 0; background-color: #f1c40f; color: #333;"
+                            title="توقع السعرات الحرارية بناءً على اسم الصنف">✨ توقّع السعرات</button>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <label>الشارة:</label>
+                    <select id="productBadge">
+                        <option value="">بدون شارة</option>
+                        <option value="new">🟢 جديد</option>
+                        <option value="best">🔴 الأكثر مبيعاً</option>
+                        <option value="offer">🟡 عرض خاص</option>
+                    </select>
+                </div>
+
+                <div class="form-section">
+                    <label>اسم ملف الصورة (المسار):</label>
+                    <input type="text" id="editItemImage" placeholder="مثال: images/product.jpg">
+                </div>
+
+                <!-- فاصل للأحجام والأسعار -->
+                <div class="sizes-section-divider">
+                    <h3 id="sizesAndPricesTitle">الأحجام والأسعار</h3>
+                </div>
+
+                <div id="editSizesList" class="sizes-list"></div>
+
+                <button type="button" class="add-more-btn" id="addSizeBtn">+ أضف حجم أخر</button>
+
+                <!-- فاصل للأنواع -->
+                <div class="sizes-section-divider" style="margin-top: 25px;">
+                    <h3>الأنواع (حراق، عادي، إلخ)</h3>
+                </div>
+
+                <div id="editTypesList" class="types-edit-list"></div>
+
+                <button type="button" class="add-more-btn" id="addTypeBtn">+ أضف نوع أخر</button>
+
+                <!-- سطور أنواع إضافية (مجموعات) -->
+                <div class="sizes-section-divider" style="margin-top: 25px;">
+                    <h3>سطور أنواع إضافية (مثل: بدون رز، مع رز)</h3>
+                </div>
+
+                <div id="editTypeGroupsList"></div>
+
+                <button type="button" class="add-more-btn" id="addTypeGroupBtn">+ أضف سطر أنواع جديد</button>
+
+                <!-- قسم إدارة الأسعار الخاصة بكل نوع -->
+                <div id="typeSpecificPricingSection" style="margin-top: 20px;">
+                    <div class="sizes-section-divider">
+                        <h3>إدارة الأسعار لكل نوع</h3>
+                    </div>
+                    <div id="typeSpecificPricingContainer"></div>
+                </div>
+
+                <div class="form-footer">
+                    <button type="button" class="cancel-btn" id="cancelEditProduct">إلغاء</button>
+                    <button type="submit" class="save-btn" id="saveEditProductBtn">حفظ التعديلات</button>
+                    <button type="button" class="add-btn" id="syncProductBtn" style="background-color:#9b59b6;">نشر
+                        وتزامن 🌍</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Form Modal (Add/Edit Category/Product) -->
+    <div class="modal" id="adminFormModal">
+        <div class="modal-content form-modal">
+            <h2 id="adminFormTitle">إضافة</h2>
+            <div style="position: absolute; top: 10px; right: 10px; display: flex; gap: 5px;">
+                <button class="close-modal" id="closeAdminForm" style="position: static;">&times;</button>
+                <button type="button" class="close-modal" id="backAdminForm"
+                    style="position: static; font-size: 16px; padding: 0 10px;">عودة</button>
+            </div>
+            <form id="adminForm">
+                <div class="form-section" id="adminProductCategoryGroup">
+                    <label id="adminProductCategoryLabel">القسم المستهدف:</label>
+                    <select id="adminProductCategory" required></select>
+                </div>
+
+                <div class="form-section">
+                    <input type="text" id="adminItemName" placeholder="الاسم" required>
+                </div>
+
+                <div class="form-section" id="adminCategoryCaloriesGroup" style="display:none;">
+                    <label>تعديل سعرات القسم (سيطُبق على أصناف القسم):</label>
+                    <div style="display:flex; gap:8px;">
+                        <button type="button" class="add-btn" id="btnFillCatCalories"
+                            style="flex:1;background-color: #f1c40f; color: #333;">✨ إكمال السعرات</button>
+                        <button type="button" class="delete-btn" id="btnRemoveCatCalories" style="flex:1;">🧹 مسح
+                            السعرات</button>
+                    </div>
+                </div>
+
+                <div class="form-section" id="adminProductPriceGroup">
+                    <input type="number" id="adminProductPrice" placeholder="السعر الأساسي (ريال)" step="0.01">
+                </div>
+                <div class="form-section" id="adminProductCaloriesGroup">
+                    <label>السعرات الحرارية:</label>
+                    <div style="display:flex; gap:8px;">
+                        <input type="number" id="adminItemCalories" placeholder="السعرات (اختياري)" style="flex:1;">
+                        <button type="button" class="add-btn" id="adminMagicCaloriesBtn"
+                            style="padding: 0 15px; margin: 0; background-color: #f1c40f; color: #333;"
+                            title="توقع السعرات الحرارية بناءً على اسم الصنف">✨ توقّع السعرات</button>
+                    </div>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;margin-top:6px;">
+                    <button type="button" class="paste-btn" id="pasteSizesAdminBtn">لصق الأحجام</button>
+                    <div id="adminSizesPreview" style="color:#444;font-size:13px;"></div>
+                </div>
+
+                <div class="form-section">
+                    <input type="text" id="adminItemImage" placeholder="اسم ملف الصورة (مثال: product.jpg)">
+                </div>
+
+                <div class="form-footer">
+                    <button type="button" class="cancel-btn" id="cancelAdminForm">إلغاء</button>
+                    <button type="submit" class="save-btn" id="saveAdminForm">حفظ</button>
+                    <button type="button" class="add-btn" id="syncCategoryBtn" style="background-color:#9b59b6;">نشر
+                        وتزامن 🌍</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Scroll to Top -->
+    <button class="scroll-top-btn" id="scrollTopBtn" title="رجوع للأعلى">⬆</button>
+
+    <!-- html2canvas Library for converting HTML to Image -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
+
+    <script src="google-translate-controller.js" defer></script>
+    <script type="module" src="app.js"></script>
+    <script>
+        // تسجيل Service Worker (PWA)
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(() => { });
+        }
+    </script>
+
+</body>
+
+</html>
