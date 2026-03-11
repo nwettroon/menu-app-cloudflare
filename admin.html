@@ -296,11 +296,11 @@
         let clientsData = { clients: {} };
 
         function loadClients() {
-            // قراءة من config.js عبر fetch بدل clients.json لأننا غيرنا النظام
             fetch('clients.json')
                 .then(r => r.json())
                 .then(data => {
-                    clientsData = Object.keys(data).length > 0 && data.clients ? data : { clients: data };
+                    // تصحيح: دعم الـ format القديم والجديد بكل سهولة
+                    clientsData = { clients: data.clients || data };
                     renderClients();
                 })
                 .catch(() => {
