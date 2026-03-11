@@ -438,48 +438,41 @@
             for (const [id, client] of Object.entries(data.clients)) {
                 let moyasarConfig = '';
                 if (client.moyasarPublishableKey) {
-                    moyasarConfig = \`\n        moyasarPublishableKey: "\${client.moyasarPublishableKey}"\`;
+                    moyasarConfig = '\n        moyasarPublishableKey: "' + client.moyasarPublishableKey + '"';
                 }
 
-                entries += \`    "\${id}": {\n        name: "\${client.name}",\n        domains: \${JSON.stringify(client.domains)}\${moyasarConfig}\n    },\n\`;
+                entries += '    "' + id + '": {\n        name: "' + client.name + '",\n        domains: ' + JSON.stringify(client.domains) + moyasarConfig + '\n    },\n';
             }
 
-            return \`/**
- * ===== إعدادات العملاء (Cloudflare) =====
- * هذا الملف يُولَّد تلقائياً من admin.html - لا تعدّله يدوياً!
- * آخر تحديث: \${new Date().toLocaleString('ar-SA')}
- */
-
-const CLIENTS_DATA = {
-\${entries}};
-
-/**
- * كشف العميل الحالي من الرابط تلقائياً
- */
-function detectClient() {
-    const hostname = window.location.hostname;
-
-    // البحث في كل العملاء عن الدومين المطابق
-    for (const [clientId, client] of Object.entries(CLIENTS_DATA)) {
-        if (client.domains.includes(hostname)) {
-            console.log(\\\`✅ تم التعرف على العميل: \${client.name} (\${clientId})\\\`);
-            return { id: clientId, ...client };
-        }
-    }
-
-    // لو localhost أو غير معروف - استخدم أول عميل (للتطوير المحلي)
-    const firstKey = Object.keys(CLIENTS_DATA)[0];
-    const fallback = CLIENTS_DATA[firstKey];
-    console.log(\\\`⚠️ دومين غير معروف (\${hostname}) - استخدام: \${fallback.name}\\\`);
-    return { id: firstKey, ...fallback };
-}
-
-// === العميل الحالي ===
-const CLIENT = detectClient();
-
-// تصدير للاستخدام في app.js
-export { CLIENT, CLIENTS_DATA };
-\`;
+            return '/**\n' +
+                ' * ===== إعدادات العملاء (Cloudflare) =====\n' +
+                ' * هذا الملف يُولَّد تلقائياً من admin.html - لا تعدّله يدوياً!\n' +
+                ' * آخر تحديث: ' + new Date().toLocaleString('ar-SA') + '\n' +
+                ' */\n\n' +
+                'const CLIENTS_DATA = {\n' +
+                entries + '};\n\n' +
+                '/**\n' +
+                ' * كشف العميل الحالي من الرابط تلقائياً\n' +
+                ' */\n' +
+                'function detectClient() {\n' +
+                '    const hostname = window.location.hostname;\n\n' +
+                '    // البحث في كل العملاء عن الدومين المطابق\n' +
+                '    for (const [clientId, client] of Object.entries(CLIENTS_DATA)) {\n' +
+                '        if (client.domains.includes(hostname)) {\n' +
+                '            console.log("✅ تم التعرف على العميل: " + client.name + " (" + clientId + ")");\n' +
+                '            return { id: clientId, ...client };\n' +
+                '        }\n' +
+                '    }\n\n' +
+                '    // لو localhost أو غير معروف - استخدم أول عميل (للتطوير المحلي)\n' +
+                '    const firstKey = Object.keys(CLIENTS_DATA)[0];\n' +
+                '    const fallback = CLIENTS_DATA[firstKey];\n' +
+                '    console.log("⚠️ دومين غير معروف (" + hostname + ") - استخدام: " + fallback.name);\n' +
+                '    return { id: firstKey, ...fallback };\n' +
+                '}\n\n' +
+                '// === العميل الحالي ===\n' +
+                'const CLIENT = detectClient();\n\n' +
+                '// تصدير للاستخدام في app.js\n' +
+                'export { CLIENT, CLIENTS_DATA };\n';
         }
 
         // === أدوات ===
