@@ -61,6 +61,12 @@ function applyUISettings() {
         }
     }
 
+    // إخفاء زر التحديث
+    const refreshBtn = document.getElementById('refreshBtn');
+    if (refreshBtn) {
+        refreshBtn.style.display = state.disableRefreshBtn ? 'none' : 'flex';
+    }
+
     // وضع الصيانة
     let mainContent = document.getElementById('productsContainer');
     let maintenanceMask = document.getElementById('maintenanceMask');

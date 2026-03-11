@@ -153,6 +153,18 @@ export function showAdminPanelUI() {
         };
     }
 
+    const disableRefreshBtnCheckbox = document.getElementById('disableRefreshBtnCheckbox');
+    if (disableRefreshBtnCheckbox) {
+        disableRefreshBtnCheckbox.checked = state.disableRefreshBtn === true;
+        disableRefreshBtnCheckbox.onchange = function () {
+            state.disableRefreshBtn = this.checked;
+            saveSettings();
+            showToast(`زر التحديث: ${this.checked ? 'مخفي' : 'ظاهر'}`, 'success');
+            const refreshBtn = document.getElementById('refreshBtn');
+            if (refreshBtn) refreshBtn.style.display = this.checked ? 'none' : 'flex';
+        };
+    }
+
     const disableCartCheckbox = document.getElementById('disableCartCheckbox');
     if (disableCartCheckbox) {
         disableCartCheckbox.checked = state.disableCart === true;

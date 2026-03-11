@@ -35,6 +35,7 @@ export const state = {
     disableBestSellers: false,
     disableShifts: false,
     disableAdminBtn: false,
+    disableRefreshBtn: false,
     simulatePayment: false,
 
     // إعدادات التصميم المتقدمة

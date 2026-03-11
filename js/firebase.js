@@ -98,6 +98,7 @@ export async function loadDataFromServer() {
         state.disableBestSellers = settings.disableBestSellers || false;
         state.disableShifts = settings.disableShifts || false;
         state.disableAdminBtn = settings.disableAdminBtn || false;
+        state.disableRefreshBtn = settings.disableRefreshBtn || false;
         state.maintenanceMode = settings.maintenanceMode || false;
         state.enableOnlinePayment = settings.enableOnlinePayment || false;
         state.simulatePayment = settings.simulatePayment || false;
@@ -151,6 +152,7 @@ export async function saveSettings(silent = false) {
             disableBestSellers: state.disableBestSellers,
             disableShifts: state.disableShifts,
             disableAdminBtn: state.disableAdminBtn,
+            disableRefreshBtn: state.disableRefreshBtn,
             maintenanceMode: state.maintenanceMode,
             enableOnlinePayment: state.enableOnlinePayment || false,
             simulatePayment: state.simulatePayment || false
